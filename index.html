@@ -141,7 +141,6 @@
             } else if (p2.b > 0 && p1.b <= 0) {
                 turnInd.innerText = p2.n;
             } else {
-                // Altrimenti segue la normale alternanza a ogni round
                 turnInd.innerText = (roundCounter % 2 === 0) ? p1.n : p2.n;
             }
         }
@@ -153,14 +152,13 @@
             let buyer = pNum === 1 ? p1 : p2;
             let opponent = pNum === 1 ? p2 : p1;
             
-            // Verifica chi è l'effettivo opener del turno corrente basandosi sulla stessa logica visiva
             let currentOpenerName = document.getElementById("turn-indicator").innerText;
             let isOpener = buyer.n === currentOpenerName;
 
-            // BLOCCO REGALO RIGIDO
+            // VERIFICA DEL REGALO A 0€
             if (cost === 0) {
                 if (opponent.b > 0) {
-                    alert(`Non puoi prendere il personaggio a 0€ se il tuo avversario ha ancora budget! L'offerta minima è 0.5€.`);
+                    alert(`Non puoi impostare 0€ se l'avversario ha ancora budget! L'offerta minima è 0.5€.`);
                     return;
                 }
                 if (!isOpener) {
@@ -168,16 +166,24 @@
                     return;
                 }
                 if (buyer.b <= 0) {
-                    alert(`Devi avere dei soldi nel tuo budget per poter decidere di regalare questo personaggio all'avversario.`);
+                    alert(`Devi avere dei soldi nel tuo budget per poter decidere di cedere questo personaggio all'avversario.`);
                     return;
                 }
+                
+                // REGALO CONFERMATO: Il personaggio va nel team dell'avversario al verde!
+                if (opponent.t.length >= 5) {
+                    alert(`L'avversario ha già gli slot pieni! Non puoi regalargli questo personaggio.`);
+                    return;
+                }
+                opponent.t.push(pool[idx]);
+                document.getElementById("log").innerText = `🎁 Regalato! ${buyer.n} cede ${pool[idx].n} a ${opponent.n} gratis!`;
+            } else {
+                // ACQUISTO NORMALE CON I SOLDI
+                if (buyer.t.length >= 5 || cost > buyer.b) return;
+                buyer.b -= cost; 
+                buyer.t.push(pool[idx]);
+                document.getElementById("log").innerText = `🎉 ${buyer.n} prende ${pool[idx].n} a ${cost}€!`;
             }
-
-            if (buyer.t.length >= 5 || cost > buyer.b) return;
-
-            buyer.b -= cost; 
-            buyer.t.push(pool[idx]);
-            document.getElementById("log").innerText = cost === 0 ? `🎁 Regalato! ${buyer.n} prende ${pool[idx].n} a 0€!` : `🎉 ${buyer.n} prende ${pool[idx].n} a ${cost}€!`;
             
             idx++; roundCounter++; 
             ui();
