@@ -86,8 +86,7 @@
         ].sort(() => Math.random() - 0.5);
 
         let idx = 0, roundCounter = 0, p1 = {n:"",b:20,t:[]}, p2 = {n:"",b:20,t:[]};
-
-                function start() {
+        function start() {
             p1.n = document.getElementById("p1-in").value || "P1"; p2.n = document.getElementById("p2-in").value || "P2";
             document.getElementById("p1-n").innerText = p1.n; document.getElementById("p2-n").innerText = p2.n;
             document.getElementById("btn1").innerText = `Prende ${p1.n}`; document.getElementById("btn2").innerText = `Prende ${p2.n}`;
@@ -127,7 +126,6 @@
 
             document.getElementById("bid").oninput = function() {
                 let val = parseFloat(this.value);
-                // L'All-In funziona SOLO se i capitali sono identici e corrispondono alla cifra offerta
                 if (p1.b === p2.b && p1.b > 0 && val === p1.b) {
                     btn1.classList.add("hidden"); btn2.classList.add("hidden"); btnSp.classList.remove("hidden");
                     document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per il lancio della moneta.";
@@ -151,43 +149,30 @@
         function bid(pNum) {
             let inputVal = parseFloat(document.getElementById("bid").value);
             
-            // BLOCCO DECIMALI: Controlla se ci sono decimali nell'offerta
             if (isNaN(inputVal) || inputVal < 0 || inputVal % 1 !== 0) {
                 alert("Puoi offrire solo cifre intere! Niente decimali.");
                 return;
             }
             
             let cost = parseInt(inputVal);
-            let buyer = pNum === 1 ? p1 : p2;
+            let clicker = pNum === 1 ? p1 : p2;
             let opponent = pNum === 1 ? p2 : p1;
             
             let currentOpenerName = document.getElementById("turn-indicator").innerText;
-            let isOpener = buyer.n === currentOpenerName;
+            let isOpener = clicker.n === currentOpenerName;
 
-            // BLOCCO PORTATA BUDGET: Impedisce di offrire più di ciò che si ha
-            if (cost > buyer.b) {
-                alert(`Non hai abbastanza budget! Il tuo massimo disponibile è ${buyer.b}€.`);
-                return;
-            }
-
-            // BLOCCO TURNO VINCOLANTE SULLA CIFRA DI 1€
-            if (cost === 1 && !isOpener && opponent.b > 0) {
-                alert(`L'asta è stata aperta a 1€ da ${currentOpenerName}. Per superarlo devi rilanciare ad almeno 2€!`);
-                return;
-            }
-
-            // LOGICA DEL REGALO A 0€ (Il regalo va all'avversario al verde, non a se stessi)
+            // LOGICA DEL REGALO A 0€ CORRETTA
             if (cost === 0) {
                 if (opponent.b > 0) {
-                    alert(`Non puoi impostare 0€ se l'avversario ha ancora budget! L'offerta minima è 1€.`);
+                    alert(`Non puoi impostare 0€ se l'avversario ha ancora budget! L'offerta minima per l'asta è 1€.`);
                     return;
                 }
                 if (!isOpener) {
-                    alert(`Puoi regalare il personaggio a 0€ solo se è il tuo turno di aprire l'asta!`);
+                    alert(`Puoi regalare il personaggio a 0€ solo se tocca a te aprire l'asta! Devi premere il TUO pulsante.`);
                     return;
                 }
-                if (buyer.b <= 0) {
-                    alert(`Devi avere dei soldi nel tuo budget per poter decidere di cedere questo personaggio.`);
+                if (clicker.b <= 0) {
+                    alert(`Devi avere dei soldi nel tuo budget per poter decidere di regalare questo personaggio.`);
                     return;
                 }
                 if (opponent.t.length >= 5) {
@@ -195,14 +180,24 @@
                     return;
                 }
                 
+                // Il clicker ha i soldi e preme il suo tasto a 0€ -> Il PG va all'avversario al verde!
                 opponent.t.push(pool[idx]);
-                document.getElementById("log").innerText = `🎁 Regalato! ${buyer.n} cede ${pool[idx].n} a ${opponent.n} gratis!`;
+                document.getElementById("log").innerText = `🎁 Regalato! ${clicker.n} cede ${pool[idx].n} a ${opponent.n} gratis!`;
             } else {
-                // ACQUISTO CONSOLSOLIDATO
-                if (buyer.t.length >= 5) return;
-                buyer.b -= cost; 
-                buyer.t.push(pool[idx]);
-                document.getElementById("log").innerText = `🎉 ${buyer.n} prende ${pool[idx].n} a ${cost}€!`;
+                // ACQUISTO COMPRAVENDITA STANDARD
+                if (cost > clicker.b) {
+                    alert(`Non hai abbastanza budget! Il tuo massimo disponibile è ${clicker.b}€.`);
+                    return;
+                }
+                if (cost === 1 && !isOpener && opponent.b > 0) {
+                    alert(`L'asta è stata aperta a 1€ da ${currentOpenerName}. Per superarlo devi rilanciare ad almeno 2€!`);
+                    return;
+                }
+                if (clicker.t.length >= 5) return;
+                
+                clicker.b -= cost; 
+                clicker.t.push(pool[idx]);
+                document.getElementById("log").innerText = `🎉 ${clicker.n} prende ${pool[idx].n} a ${cost}€!`;
             }
             
             idx++; roundCounter++; 
