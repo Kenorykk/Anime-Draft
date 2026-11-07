@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Draft con Asta</title>
+    <script src="https://jsdelivr.net"></script>
+    <style>body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, sans-serif; }</style>
+</head>
+<body class="p-4 min-h-screen flex flex-col items-center justify-center">
+
+    <!-- SCHERMATA INIZIALE -->
+    <div id="setup" class="w-full max-w-md bg-slate-800 p-6 rounded-2xl shadow-xl text-center">
+        <h1 class="text-3xl font-black text-indigo-400 mb-4">🔥 Anime Draft</h1>
+        <input type="text" id="p1-in" value="Giocatore 1" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 mb-3 text-white">
+        <input type="text" id="p2-in" value="Giocatore 2" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 mb-5 text-white">
+        <button onclick="start()" class="w-full bg-indigo-600 font-bold py-3 rounded-lg text-white">Inizia ⚔️</button>
+    </div>
+
+    <!-- SCHERMATA DI GIOCO -->
+    <div id="game" class="w-full max-w-md hidden space-y-4">
+        <div class="grid grid-cols-2 gap-3 text-center text-sm">
+            <div class="bg-slate-800 p-3 rounded-xl border border-indigo-500/30">
+                <p id="p1-n" class="font-bold text-indigo-300">P1</p>
+                <p class="text-xl font-black text-emerald-400"><span id="p1-b">20</span>€</p>
+                <p class="text-xs text-slate-400">Slot: <span id="p1-s">0</span>/5</p>
+                <div id="p1-t" class="mt-2 flex flex-col gap-1 text-xs text-left"></div>
+            </div>
+            <div class="bg-slate-800 p-3 rounded-xl border border-pink-500/30">
+                <p id="p2-n" class="font-bold text-pink-300">P2</p>
+                <p class="text-xl font-black text-emerald-400"><span id="p2-b">20</span>€</p>
+                <p class="text-xs text-slate-400">Slot: <span id="p2-s">0</span>/5</p>
+                <div id="p2-t" class="mt-2 flex flex-col gap-1 text-xs text-left"></div>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-5 rounded-2xl text-center shadow-lg">
+            <span class="bg-indigo-950 text-indigo-300 text-xs px-2.5 py-1 rounded-full font-bold">ALL'ASTA</span>
+            <h2 id="char-name" class="text-xl font-black mt-3 text-white">---</h2>
+            <div class="mt-4 flex gap-2 justify-center items-center">
+                <input type="number" id="bid" min="1" step="0.5" value="1" class="w-20 bg-slate-900 rounded-lg p-2 text-center text-lg font-bold">
+                <span class="font-bold">€</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-4">
+                <button onclick="bid(1)" id="btn1" class="bg-indigo-600 font-bold py-2 rounded-lg text-sm">Prende P1</button>
+                <button onclick="bid(2)" id="btn2" class="bg-pink-600 font-bold py-2 rounded-lg text-sm">Prende P2</button>
+            </div>
+            <button onclick="pass()" class="w-full bg-slate-700 text-slate-400 text-xs py-1.5 rounded-lg mt-3">Scarta Personaggio 🗑️</button>
+        </div>
+        <p id="log" class="text-xs text-center text-yellow-400 italic">Prendete i personaggi a turno unico!</p>
+    </div>
+
+    <!-- SCHERMATA FINALE -->
+    <div id="end" class="w-full max-w-md bg-slate-800 p-6 rounded-2xl text-center hidden space-y-4">
+        <h2 class="text-2xl font-black text-yellow-400">🏆 Verdetto Finale</h2>
+        <div id="details" class="text-sm text-slate-300 space-y-1"></div>
+        <h1 id="win" class="text-xl font-black text-emerald-400 uppercase"></h1>
+        <button onclick="location.reload()" class="w-full bg-slate-700 font-bold py-2 rounded-lg text-sm">Rigioca 🔄</button>
+    </div>
+
+    <script>
+        const pool = [
+            {n:"Hajun",s:99.5},{n:"Featherine",s:99},{n:"Akuto Sai",s:98.5},{n:"Void Shiki",s:98},{n:"Simon (STTGL)",s:95.5},{n:"Kiana Kaslana",s:95},{n:"Rimuru Tempest",s:95},{n:"Wang Ling",s:94},{n:"Sinbad",s:92},{n:"Anos Voldigoad",s:91},
+            {n:"Altair",s:90.5},{n:"Anti-Spiral",s:90},{n:"Ultimate Madoka",s:89},{n:"Space Ishtar",s:88.5},{n:"CC Goku",s:87},{n:"Gilgamesh",s:86},{n:"Zeno",s:85.5},{n:"Shinra Kusakabe",s:85},{n:"Yhwach",s:82},{n:"Whis",s:81.5},
+            {n:"Beerus",s:80},{n:"Sailor Moon",s:78},{n:"Kaguya Otsutsuki",s:75},{n:"Saitama",s:74},{n:"Madara Uchiha",s:72},{n:"Naruto Uzumaki",s:70},{n:"Ichigo Kurosaki",s:68},{n:"Giorno (GER)",s:66},{n:"Accelerator",s:65},{n:"Funny Valentine",s:64},
+            {n:"Sung Jin-Woo",s:60},{n:"Mio Takamiya",s:58},{n:"Satoru Gojo",s:55.5},{n:"Sukuna",s:55},{n:"Makima",s:52},{n:"Alucard",s:50},{n:"Devilman",s:49.5},{n:"Luffy (Gear 5)",s:46},{n:"Kaido",s:45},{n:"Tatsumaki",s:43},
+            {n:"Mob (100%)",s:42},{n:"Meliodas",s:41.5},{n:"Natsu Dragneel",s:40},{n:"Denji (Hell)",s:39.5},{n:"Eren Yeager",s:38},{n:"Deku (100%)",s:37},{n:"Gon (Adult)",s:37},{n:"Meruem",s:35},{n:"Jotaro Kujo",s:33},{n:"Light Yagami",s:30}
+        ].sort(() => Math.random() - 0.5);
+
+        let idx=0, p1={n:"",b:20,t:[]}, p2={n:"",b:20,t:[]};
+
+        function start() {
+            p1.n = document.getElementById("p1-in").value || "P1";
+            p2.n = document.getElementById("p2-in").value || "P2";
+            document.getElementById("p1-n").innerText = p1.n; document.getElementById("p2-n").innerText = p2.n;
+            document.getElementById("btn1").innerText = `Prende ${p1.n}`; document.getElementById("btn2").innerText = `Prende ${p2.n}`;
+            document.getElementById("setup").classList.add("hidden");
+            document.getElementById("game").classList.remove("hidden");
+            show();
+        }
+
+        function show() {
+            if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
+            if (idx >= pool.length) { over(); return; }
+            document.getElementById("char-name").innerText = pool[idx].n;
+            document.getElementById("bid").value = 1;
+            ui();
+        }
+
+        function bid(pNum) {
+            let cost = parseFloat(document.getElementById("bid").value);
+            let p = pNum === 1 ? p1 : p2;
+            if (p.t.length >= 5 || cost > p.b || cost <= 0) return;
+            p.b -= cost; p.t.push(pool[idx]);
+            document.getElementById("log").innerText = `🎉 ${p.n} ha preso ${pool[idx].n} a ${cost}€!`;
+            idx++; show();
+        }
+
+        function pass() {
+            document.getElementById("log").innerText = `🗑️ Scartato ${pool[idx].n}`;
+            idx++; show();
+        }
+
+        function ui() {
+            document.getElementById("p1-b").innerText = p1.b.toFixed(1); document.getElementById("p2-b").innerText = p2.b.toFixed(1);
+            document.getElementById("p1-s").innerText = p1.t.length; document.getElementById("p2-s").innerText = p2.t.length;
+            document.getElementById("p1-t").innerHTML = p1.t.map(c => `• ${c.n}`).join('<br>');
+            document.getElementById("p2-t").innerHTML = p2.t.map(c => `• ${c.n}`).join('<br>');
+            document.getElementById("btn1").disabled = p1.t.length >= 5; document.getElementById("btn2").disabled = p2.t.length >= 5;
+        }
+
+        function over() {
+            document.getElementById("game").classList.add("hidden");
+            document.getElementById("end").classList.remove("hidden");
+            let s1 = p1.t.reduce((a,c)=>a+c.s,0), s2 = p2.t.reduce((a,c)=>a+c.s,0);
+            document.getElementById("details").innerHTML = `<p>${p1.n}: ${s1.toFixed(1)} pt</p><p>${p2.n}: ${s2.toFixed(1)} pt</p>`;
+            document.getElementById("win").innerText = s1>s2 ? `Vince ${p1.n}! 🏆` : s2>s1 ? `Vince ${p2.n}! 🏆` : "Pareggio! 🤝";
+        }
+    </script>
+</body>
+</html>
