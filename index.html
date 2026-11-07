@@ -134,7 +134,16 @@
             };
 
             bidCtrl.classList.remove("hidden"); btnSp.classList.add("hidden"); btn1.classList.remove("hidden"); btn2.classList.remove("hidden");
-            turnInd.innerText = (roundCounter % 2 === 0) ? p1.n : p2.n;
+            
+            // LOGICA REGOLE TURNO: Se uno è a 0€, apre per forza sempre chi ha ancora budget
+            if (p1.b > 0 && p2.b <= 0) {
+                turnInd.innerText = p1.n;
+            } else if (p2.b > 0 && p1.b <= 0) {
+                turnInd.innerText = p2.n;
+            } else {
+                // Altrimenti segue la normale alternanza a ogni round
+                turnInd.innerText = (roundCounter % 2 === 0) ? p1.n : p2.n;
+            }
         }
 
         function bid(pNum) {
@@ -143,16 +152,19 @@
 
             let buyer = pNum === 1 ? p1 : p2;
             let opponent = pNum === 1 ? p2 : p1;
-            let isOpener = (roundCounter % 2 === 0 && pNum === 1) || (roundCounter % 2 !== 0 && pNum === 2);
+            
+            // Verifica chi è l'effettivo opener del turno corrente basandosi sulla stessa logica visiva
+            let currentOpenerName = document.getElementById("turn-indicator").innerText;
+            let isOpener = buyer.n === currentOpenerName;
 
-            // REGOLA REGALO RIGIDA: Gestione dell'eccezione a 0€
+            // BLOCCO REGALO RIGIDO
             if (cost === 0) {
                 if (opponent.b > 0) {
                     alert(`Non puoi prendere il personaggio a 0€ se il tuo avversario ha ancora budget! L'offerta minima è 0.5€.`);
                     return;
                 }
                 if (!isOpener) {
-                    alert(`Puoi regalare il personaggio a 0€ solo se è il tuo turno di aprire l'asta ed hai ancora budget!`);
+                    alert(`Puoi regalare il personaggio a 0€ solo se è il tuo turno di aprire l'asta!`);
                     return;
                 }
                 if (buyer.b <= 0) {
