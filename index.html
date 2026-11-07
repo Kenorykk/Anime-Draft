@@ -67,17 +67,13 @@
         <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Gestione delle offerte in corso.</p></div>
     </div>
 
-    <!-- RECAP FINALE CORRETTO -->
+    <!-- RECAP FINALE STRUTTURATO PER EVITARE I CONFLITTI CSS -->
     <div id="end" class="w-full max-w-md glass-card p-8 rounded-[2rem] text-center hidden space-y-6">
         <div>
             <span class="text-5xl">👑</span>
             <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 mt-2">VERDETTO FINALE</h2>
         </div>
-        <div id="details" class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 text-slate-100 text-sm space-y-3"></div>
-        <div class="py-3 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent border-y border-emerald-500/20">
-            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Esito dello Scontro Diretto</p>
-            <h1 id="win" class="text-3xl font-black text-emerald-400 uppercase tracking-wide mt-2"></h1>
-        </div>
+        <div id="final-results-box" class="space-y-4"></div>
         <button onclick="location.reload()" class="w-full bg-slate-800 hover:bg-slate-700 font-bold py-4 rounded-2xl text-sm cursor-pointer transition">RIVINCITA 🔄</button>
     </div>
     <script>
@@ -106,7 +102,7 @@
             if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
             if (idx >= pool.length) { over(); return; }
 
-            // AUTOMAZIONE TOTALE: Scatta SOLO SE ENTRAMBI hanno finito i soldi ma hanno ancora slot liberi
+            // AUTOMAZIONE TOTALE 0€: Assegna a ciclo continuo se entrambi sono al verde
             if (p1.b <= 0 && p2.b <= 0 && (p1.t.length < 5 || p2.t.length < 5)) {
                 while (p1.t.length < 5 || p2.t.length < 5) {
                     if (idx >= pool.length) break;
@@ -134,7 +130,6 @@
 
             document.getElementById("bid").oninput = function() {
                 let val = parseFloat(this.value);
-                // L'ALL IN dorato compare SOLO SE i due budget sono uguali, maggiori di zero e viene digitata la cifra esatta del budget
                 if (p1.b === p2.b && p1.b > 0 && val === p1.b) {
                     btn1.classList.add("hidden"); btn2.classList.add("hidden"); btnSp.classList.remove("hidden");
                     document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per il lancio della moneta.";
@@ -145,7 +140,6 @@
 
             bidCtrl.classList.remove("hidden"); btnSp.classList.add("hidden"); btn1.classList.remove("hidden"); btn2.classList.remove("hidden");
             
-            // Se un giocatore è a 0€ e l'altro ha ancora soldi, apre sempre chi ha il budget
             if (p1.b > 0 && p2.b <= 0) {
                 turnInd.innerText = p1.n;
             } else if (p2.b > 0 && p1.b <= 0) {
@@ -247,24 +241,27 @@
             let roundScore1 = Math.round(max1.s);
             let roundScore2 = Math.round(max2.s);
 
-            let detailsBox = document.getElementById("details");
-            let winBox = document.getElementById("win");
+            let outcomeText = "";
+            if (roundScore1 > roundScore2) {
+                outcomeText = `Vince ${p1.n}! 🏆`;
+            } else if (roundScore2 > roundScore1) {
+                outcomeText = `Vince ${p2.n}! 🏆`;
+            } else {
+                outcomeText = "Pareggio Decimale! 🤝";
+            }
 
-            detailsBox.innerHTML = `
+            // SCRITTURA IN BLOCCO UNICO PER IMPEDIRE ERRORI DI RENDERING
+            document.getElementById("final-results-box").innerHTML = `
                 <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 font-bold text-center">Miglior Guerriero Schierato</div>
-                <div class="flex flex-col gap-2 text-left bg-slate-950 p-3 rounded-xl border border-slate-800">
+                <div class="flex flex-col gap-2 text-left bg-slate-950 p-4 rounded-xl border border-slate-800">
                     <p><span class="text-indigo-400 font-bold">${p1.n}:</span> ${max1.n} (${max1.s.toFixed(1)} pt → <span class="font-black text-white">${roundScore1}</span>)</p>
                     <p class="border-t border-slate-800/60 pt-2"><span class="text-pink-400 font-bold">${p2.n}:</span> ${max2.n} (${max2.s.toFixed(1)} pt → <span class="font-black text-white">${roundScore2}</span>)</p>
                 </div>
+                <div class="py-4 mt-4 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent border-y border-emerald-500/20">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Esito dello Scontro Diretto</p>
+                    <h1 class="text-3xl font-black text-emerald-400 uppercase tracking-wide mt-2 text-center">${outcomeText}</h1>
+                </div>
             `;
-            
-            if (roundScore1 > roundScore2) {
-                winBox.innerText = `Vince ${p1.n}! 🏆`;
-            } else if (roundScore2 > roundScore1) {
-                winBox.innerText = `Vince ${p2.n}! 🏆`;
-            } else {
-                winBox.innerText = "Pareggio Decimale! 🤝";
-            }
         }
     </script>
 </body>
