@@ -98,7 +98,7 @@
             if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
             if (idx >= pool.length) { over(); return; }
 
-            // AUTOMAZIONE TOTALE 0€: Se entrambi sono a 0€, assegna a ciclo continuo fino alla fine
+            // AUTOMAZIONE TOTALE 0€: Assegna a ciclo continuo se entrambi sono al verde
             if (p1.b <= 0 && p2.b <= 0 && p1.t.length < 5 && p2.t.length < 5) {
                 while (p1.t.length < 5 || p2.t.length < 5) {
                     if (idx >= pool.length) break;
@@ -110,7 +110,7 @@
                     idx++;
                 }
                 ui();
-                setTimeout(over, 800);
+                over();
                 return;
             }
 
@@ -136,7 +136,6 @@
 
             bidCtrl.classList.remove("hidden"); btnSp.classList.add("hidden"); btn1.classList.remove("hidden"); btn2.classList.remove("hidden");
             
-            // Se uno è a 0€, apre per forza sempre chi ha ancora budget
             if (p1.b > 0 && p2.b <= 0) {
                 turnInd.innerText = p1.n;
             } else if (p2.b > 0 && p1.b <= 0) {
@@ -161,7 +160,6 @@
             let currentOpenerName = document.getElementById("turn-indicator").innerText;
             let isOpener = clicker.n === currentOpenerName;
 
-            // LOGICA DEL REGALO A 0€ CORRETTA
             if (cost === 0) {
                 if (opponent.b > 0) {
                     alert(`Non puoi impostare 0€ se l'avversario ha ancora budget! L'offerta minima per l'asta è 1€.`);
@@ -180,11 +178,9 @@
                     return;
                 }
                 
-                // Il clicker ha i soldi e preme il suo tasto a 0€ -> Il PG va all'avversario al verde!
                 opponent.t.push(pool[idx]);
                 document.getElementById("log").innerText = `🎁 Regalato! ${clicker.n} cede ${pool[idx].n} a ${opponent.n} gratis!`;
             } else {
-                // ACQUISTO COMPRAVENDITA STANDARD
                 if (cost > clicker.b) {
                     alert(`Non hai abbastanza budget! Il tuo massimo disponibile è ${clicker.b}€.`);
                     return;
@@ -230,7 +226,8 @@
         }
 
         function over() {
-            document.getElementById("game").classList.add("hidden"); document.getElementById("end").classList.remove("hidden");
+            document.getElementById("game").classList.add("hidden"); 
+            document.getElementById("end").classList.remove("hidden");
             
             let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max, p1.t) : {n:"Nessuno", s:0};
             let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max, p2.t) : {n:"Nessuno", s:0};
