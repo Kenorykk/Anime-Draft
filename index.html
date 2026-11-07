@@ -64,7 +64,7 @@
             </div>
             <button onclick="handleAllInParitario()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
         </div>
-        <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Impostate il prezzo. Si può mettere 0€ per regalare il personaggio.</p></div>
+        <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Gestione delle offerte in corso.</p></div>
     </div>
 
     <!-- VERDETTO -->
@@ -95,11 +95,10 @@
         }
 
         function show() {
-            // Se entrambi hanno finito i 5 slot, il gioco finisce immediatamente
             if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
             if (idx >= pool.length) { over(); return; }
 
-            // AUTOMAZIONE TOTALE 0€: Se entrambi sono a 0€, assegna a ciclo continuo fino alla fine senza tasti
+            // AUTOMAZIONE TOTALE 0€: Se entrambi sono a 0€, assegna a ciclo continuo fino alla fine
             if (p1.b <= 0 && p2.b <= 0 && p1.t.length < 5 && p2.t.length < 5) {
                 while (p1.t.length < 5 || p2.t.length < 5) {
                     if (idx >= pool.length) break;
@@ -110,8 +109,8 @@
                     lucky.t.push(pool[idx]);
                     idx++;
                 }
-                ui(); // Aggiorna la grafica con tutti i personaggi inseriti
-                setTimeout(over, 800); // Mostra il verdetto finale dopo una brevissima pausa
+                ui();
+                setTimeout(over, 800);
                 return;
             }
 
@@ -141,12 +140,35 @@
         function bid(pNum) {
             let cost = parseFloat(document.getElementById("bid").value);
             if (isNaN(cost) || cost < 0) return;
-            let p = pNum === 1 ? p1 : p2;
-            if (p.t.length >= 5 || cost > p.b) return;
-            p.b -= cost; p.t.push(pool[idx]);
-            document.getElementById("log").innerText = `🎉 ${p.n} prende ${pool[idx].n} a ${cost}€!`;
+
+            let buyer = pNum === 1 ? p1 : p2;
+            let opponent = pNum === 1 ? p2 : p1;
+            let isOpener = (roundCounter % 2 === 0 && pNum === 1) || (roundCounter % 2 !== 0 && pNum === 2);
+
+            // REGOLA REGALO RIGIDA: Gestione dell'eccezione a 0€
+            if (cost === 0) {
+                if (opponent.b > 0) {
+                    alert(`Non puoi prendere il personaggio a 0€ se il tuo avversario ha ancora budget! L'offerta minima è 0.5€.`);
+                    return;
+                }
+                if (!isOpener) {
+                    alert(`Puoi regalare il personaggio a 0€ solo se è il tuo turno di aprire l'asta ed hai ancora budget!`);
+                    return;
+                }
+                if (buyer.b <= 0) {
+                    alert(`Devi avere dei soldi nel tuo budget per poter decidere di regalare questo personaggio all'avversario.`);
+                    return;
+                }
+            }
+
+            if (buyer.t.length >= 5 || cost > buyer.b) return;
+
+            buyer.b -= cost; 
+            buyer.t.push(pool[idx]);
+            document.getElementById("log").innerText = cost === 0 ? `🎁 Regalato! ${buyer.n} prende ${pool[idx].n} a 0€!` : `🎉 ${buyer.n} prende ${pool[idx].n} a ${cost}€!`;
+            
             idx++; roundCounter++; 
-            ui(); // Forza l'aggiornamento visivo immediato del team appena si preme il tasto
+            ui();
             setTimeout(show, 400);
         }
 
@@ -168,20 +190,18 @@
             document.getElementById("p2-t").innerHTML = p2.t.map(c => `<div class="bg-pink-950/40 border border-pink-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate">🔸 ${c.n}</div>`).join('');
             document.getElementById("btn1").disabled = p1.t.length >= 5; document.getElementById("btn2").disabled = p2.t.length >= 5;
             
-            if (p1.t.length >= 5) { document.getElementById("card-p1").style.opacity = "0.4"; document.getElementById("btn1").classList.add("hidden"); document.getElementById("btn2").className = "col-span-2 bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer"; }
+            if (p1.t.length >= 5) { document.getElementById("card-p1").style.opacity = "0.4"; document.getElementById("btn1").classList.add("hidden"); document.getElementById("btn2").className = "col-span-2 bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm text-white"; }
             else { document.getElementById("card-p1").style.opacity = "1"; }
-            if (p2.t.length >= 5) { document.getElementById("card-p2").style.opacity = "0.4"; document.getElementById("btn2").classList.add("hidden"); document.getElementById("btn1").className = "col-span-2 bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer"; }
+            if (p2.t.length >= 5) { document.getElementById("card-p2").style.opacity = "0.4"; document.getElementById("btn2").classList.add("hidden"); document.getElementById("btn1").className = "col-span-2 bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm text-white"; }
             else { document.getElementById("card-p2").style.opacity = "1"; }
         }
 
         function over() {
             document.getElementById("game").classList.add("hidden"); document.getElementById("end").classList.remove("hidden");
             
-            // Trova il personaggio col punteggio più alto per P1 e per P2
-            let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max, p1.t[0]) : {n:"Nessuno", s:0};
-            let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max, p2.t[0]) : {n:"Nessuno", s:0};
+            let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max, p1.t) : {n:"Nessuno", s:0};
+            let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max, p2.t) : {n:"Nessuno", s:0};
             
-            // Arrotondamento all'intero più vicino delle carte migliori (es: 99.5 e 99 diventano entrambi 100)
             let roundScore1 = Math.round(max1.s);
             let roundScore2 = Math.round(max2.s);
 
