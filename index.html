@@ -17,7 +17,7 @@
 </head>
 <body class="p-4 md:p-6 min-h-screen flex flex-col items-center justify-center select-none antialiased">
 
-    <!-- SCHERMATA NOMI -->
+    <!-- SCHERMATA INSERIMENTO NOMI -->
     <div id="setup" class="w-full max-w-md glass-card p-8 rounded-[2rem] shadow-2xl text-center" style="display: block;">
         <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-6">ANIME DRAFT</h1>
         <div class="space-y-4 mb-8">
@@ -27,15 +27,17 @@
         <button onclick="start()" class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 font-black py-4 rounded-2xl cursor-pointer">ENTRA NELL'ARENA ⚔️</button>
     </div>
 
-    <!-- SCHERMATA DEL GIOCO -->
+    <!-- SCHERMATA CENTRALE DEL GIOCO -->
     <div id="game" class="w-full max-w-md space-y-5" style="display: none;">
         <div class="grid grid-cols-2 gap-4 text-center">
+            <!-- Pannello Personale P1 -->
             <div id="card-p1" class="glass-card p-5 rounded-[2rem] border-b-4 border-indigo-500 neon-p1">
                 <p id="p1-n" class="font-black text-xs text-indigo-400 truncate">P1</p>
                 <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p1-b">20</span>€</p>
                 <div class="mt-2 inline-flex px-2.5 py-0.5 bg-indigo-950/50 border border-indigo-800/30 rounded-full text-[10px] font-black">SLOT: <span id="p1-s" class="text-white">0</span>/5</div>
                 <div id="p1-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div>
             </div>
+            <!-- Pannello Personale P2 -->
             <div id="card-p2" class="glass-card p-5 rounded-[2rem] border-b-4 border-pink-500 neon-p2">
                 <p id="p2-n" class="font-black text-xs text-pink-400 truncate">P2</p>
                 <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p2-b">20</span>€</p>
@@ -44,6 +46,7 @@
             </div>
         </div>
 
+        <!-- SCHEDA DELL'ASTA -->
         <div class="glass-card p-6 rounded-[2rem] text-center shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
             <div class="inline-flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1 rounded-full text-[10px] text-slate-400 font-black">TABELLONE ASTA</div>
@@ -64,7 +67,7 @@
         <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Scegliete le offerte.</p></div>
     </div>
 
-    <!-- SCHERMATA FINALE RIGIDA E FISSA -->
+    <!-- SCHERMATA DEL VERDETTO FINALE -->
     <div id="end" class="w-full max-w-md glass-card p-8 rounded-[2rem] text-center" style="display: none;">
         <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 mb-6">VERDETTO FINALE</h2>
         
@@ -108,15 +111,15 @@
             if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
             if (idx >= pool.length) { over(); return; }
 
-            // AUTOMAZIONE TOTALE 0€: Assegna a ciclo continuo se entrambi sono al verde
             if (p1.b <= 0 && p2.b <= 0 && (p1.t.length < 5 || p2.t.length < 5)) {
                 while (p1.t.length < 5 || p2.t.length < 5) {
                     if (idx >= pool.length) break;
                     let valid = [];
-                    if (p1.t.length < 5) valid.push(1);
-                    if (p2.t.length < 5) valid.push(2);
-                    let lucky = valid[Math.floor(Math.random() * valid.length)] === 1 ? p1 : p2;
-                    lucky.t.push(pool[idx]);
+                    if (p1.t.length < 5) valid.push(p1);
+                    if (p2.t.length < 5) valid.push(p2);
+                    
+                    let lucky = valid[Math.floor(Math.random() * valid.length)];
+                    lucky.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
                     idx++;
                 }
                 ui();
@@ -188,7 +191,7 @@
                     return;
                 }
                 
-                opponent.t.push(pool[idx]);
+                opponent.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
                 document.getElementById("log").innerText = `🎁 Regalato! ${clicker.n} cede ${pool[idx].n} a ${opponent.n} gratis!`;
             } else {
                 if (cost > clicker.b) {
@@ -202,7 +205,7 @@
                 if (clicker.t.length >= 5) return;
                 
                 clicker.b -= cost; 
-                clicker.t.push(pool[idx]);
+                clicker.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
                 document.getElementById("log").innerText = `🎉 ${clicker.n} prende ${pool[idx].n} a ${cost}€!`;
             }
             
@@ -216,7 +219,7 @@
                 let cost = p1.b;
                 let winner = Math.random() < 0.5 ? p1 : p2;
                 winner.b -= cost; 
-                winner.t.push(pool[idx]);
+                winner.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
                 document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n} in ALL IN a ${cost}€ per ${pool[idx].n}!`;
                 idx++; roundCounter++; 
                 ui();
@@ -256,8 +259,8 @@
             document.getElementById("game").style.display = "none"; 
             document.getElementById("end").style.display = "block";
             
-            let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max, p1.t) : {n:"Nessuno", s:0};
-            let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max, p2.t) : {n:"Nessuno", s:0};
+            let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0};
+            let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0};
             
             let roundScore1 = Math.round(max1.s);
             let roundScore2 = Math.round(max2.s);
@@ -277,7 +280,7 @@
             } else if (roundScore2 > roundScore1) {
                 winBox.innerText = `Vince ${p2.n}! 🏆`;
             } else {
-                winBox.innerText = "Pareggio Decimale! 🤝";
+                winBox.innerText = "Pareggio! 🤝";
             }
         }
     </script>
