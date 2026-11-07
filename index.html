@@ -17,91 +17,64 @@
 </head>
 <body class="p-4 md:p-6 min-h-screen flex flex-col items-center justify-center select-none antialiased">
 
-    <!-- SCHERMATA INIZIALE -->
+    <!-- SETUP INIZIALE -->
     <div id="setup" class="w-full max-w-md glass-card p-8 rounded-[2rem] shadow-2xl text-center">
-        <div class="inline-flex p-4 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl mb-4 border border-indigo-500/20">
-            <span class="text-4xl">👑</span>
-        </div>
-        <h1 class="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-2">ANIME DRAFT</h1>
-        <p class="text-xs text-slate-400 mb-8 font-medium">Inserite i vostri nomi per iniziare.</p>
+        <h1 class="text-4xl font-black bg-clip-text text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-6">ANIME DRAFT</h1>
         <div class="space-y-4 mb-8">
             <input type="text" id="p1-in" value="Giocatore 1" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white text-center font-bold focus:border-indigo-500 focus:outline-none">
             <input type="text" id="p2-in" value="Giocatore 2" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white text-center font-bold focus:border-pink-500 focus:outline-none">
         </div>
-        <button onclick="start()" class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 font-black py-4 rounded-2xl text-white shadow-xl shadow-purple-600/20 active:scale-[0.98] transition cursor-pointer">
-            ENTRA NELL'ARENA ⚔️
-        </button>
+        <button onclick="start()" class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 font-black py-4 rounded-2xl cursor-pointer">ENTRA NELL'ARENA ⚔️</button>
     </div>
 
-    <!-- SCHERMATA DI GIOCO -->
+    <!-- PANNELLO DI GIOCO -->
     <div id="game" class="w-full max-w-md hidden space-y-5">
-        
-        <!-- BOX INDIPENDENTI DEI GIOCATORI -->
         <div class="grid grid-cols-2 gap-4 text-center">
-            <!-- Box Personale P1 -->
-            <div id="card-p1" class="glass-card p-5 rounded-[2rem] border-b-4 border-indigo-500 neon-p1 transition-all duration-300">
-                <p id="p1-n" class="font-black text-xs uppercase tracking-widest text-indigo-400 truncate">P1</p>
-                <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p1-b">20</span><span class="text-lg font-bold ml-0.5">€</span></p>
-                <div class="mt-2 inline-block px-2.5 py-0.5 bg-indigo-950/50 border border-indigo-800/30 rounded-full text-[10px] font-black text-indigo-300">SLOT: <span id="p1-s" class="text-white">0</span>/5</div>
+            <!-- Box P1 -->
+            <div id="card-p1" class="glass-card p-5 rounded-[2rem] border-b-4 border-indigo-500 neon-p1">
+                <p id="p1-n" class="font-black text-xs text-indigo-400 truncate">P1</p>
+                <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p1-b">20</span>€</p>
+                <div class="mt-2 inline-flex px-2.5 py-0.5 bg-indigo-950/50 border border-indigo-800/30 rounded-full text-[10px] font-black">SLOT: <span id="p1-s" class="text-white">0</span>/5</div>
                 <div id="p1-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div>
             </div>
-            <!-- Box Personale P2 -->
-            <div id="card-p2" class="glass-card p-5 rounded-[2rem] border-b-4 border-pink-500 neon-p2 transition-all duration-300">
-                <p id="p2-n" class="font-black text-xs uppercase tracking-widest text-pink-400 truncate">P2</p>
-                <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p2-b">20</span><span class="text-lg font-bold ml-0.5">€</span></p>
-                <div class="mt-2 inline-block px-2.5 py-0.5 bg-pink-950/50 border border-pink-800/30 rounded-full text-[10px] font-black text-pink-300">SLOT: <span id="p2-s" class="text-white">0</span>/5</div>
+            <!-- Box P2 -->
+            <div id="card-p2" class="glass-card p-5 rounded-[2rem] border-b-4 border-pink-500 neon-p2">
+                <p id="p2-n" class="font-black text-xs text-pink-400 truncate">P2</p>
+                <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p2-b">20</span>€</p>
+                <div class="mt-2 inline-flex px-2.5 py-0.5 bg-pink-950/50 border border-pink-800/30 rounded-full text-[10px] font-black">SLOT: <span id="p2-s" class="text-white">0</span>/5</div>
                 <div id="p2-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div>
             </div>
         </div>
 
-        <!-- CASELLA DELL'ASTA SEPARATA -->
+        <!-- CASELLA ASTA INDIPENDENTE -->
         <div class="glass-card p-6 rounded-[2rem] text-center shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-            
-            <div class="inline-flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1 rounded-full">
-                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                <span class="text-slate-400 text-[10px] font-black uppercase tracking-widest">TABELLONE ASTA</span>
+            <div class="inline-flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1 rounded-full text-[10px] text-slate-400 font-black">TABELLONE ASTA</div>
+            <h2 id="char-name" class="text-3xl font-black mt-5 px-2 min-h-[72px] flex items-center justify-center">---</h2>
+            <div id="turn-box" class="my-3 py-1 px-3 bg-slate-950/40 rounded-xl inline-block border border-slate-800/50 text-xs">
+                Apre l'asta: <span id="turn-indicator" class="font-bold text-yellow-400">---</span>
             </div>
-            
-            <h2 id="char-name" class="text-3xl font-black mt-5 text-white tracking-tight leading-tight px-2 min-h-[72px] flex items-center justify-center">---</h2>
-            
-            <!-- AVVISO DI TURNO APERTURA ASTA -->
-            <div id="turn-box" class="my-3 py-1 px-3 bg-slate-950/40 rounded-xl inline-block border border-slate-800/50">
-                <p class="text-xs text-slate-300 font-medium">Apre l'asta: <span id="turn-indicator" class="font-bold text-yellow-400">---</span></p>
-            </div>
-
-            <!-- CONTROLLO PREZZO -->
             <div id="bid-control-container" class="mt-2 bg-slate-950/50 border border-slate-800/60 p-3 rounded-2xl max-w-[160px] mx-auto flex items-center justify-center gap-1">
                 <input type="number" id="bid" min="0" step="0.5" value="1" class="w-20 bg-transparent text-center text-3xl font-black text-white focus:outline-none">
                 <span class="text-xl font-extrabold text-emerald-400">€</span>
             </div>
-
-            <!-- BOTTONI ASSEGNAZIONE -->
             <div class="grid grid-cols-2 gap-3 mt-5">
-                <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm active:scale-[0.96] transition cursor-pointer text-white">Prende P1</button>
-                <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm active:scale-[0.96] transition cursor-pointer text-white">Prende P2</button>
+                <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P1</button>
+                <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P2</button>
             </div>
-
-            <!-- BOTTONE LANCO MONETA ALL-IN / ASSEGNAZIONE RANDOM 0€ -->
-            <button onclick="handleSpecialDraw()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-3 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer uppercase tracking-wider">
-                Lancia Moneta / Random 🎲
-            </button>
+            <button onclick="handleSpecialDraw()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
         </div>
-        
-        <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center">
-            <p id="log" class="text-xs text-yellow-400/90 font-medium italic">Selezionate l'esito dell'asta.</p>
-        </div>
+        <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Impostate il prezzo. Si può mettere 0€ per regalare il personaggio.</p></div>
     </div>
 
-    <!-- RECAP FINALE -->
+    <!-- VERDETTO -->
     <div id="end" class="w-full max-w-md glass-card p-8 rounded-[2rem] text-center hidden space-y-6">
-        <div><span class="text-6xl">👑</span><h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 mt-3">VERDETTO FINALE</h2></div>
+        <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500">VERDETTO FINALE</h2>
         <div id="details" class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3"></div>
         <div class="py-2 border-y border-purple-500/10">
-            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Esito Scontro</p>
-            <h1 id="win" class="text-3xl font-black text-emerald-400 uppercase tracking-wide mt-1"></h1>
+            <h1 id="win" class="text-3xl font-black text-emerald-400 uppercase tracking-wide"></h1>
         </div>
-        <button onclick="location.reload()" class="w-full bg-slate-800 font-bold py-4 rounded-2xl text-sm active:scale-[0.98] transition cursor-pointer">RIVINCITA 🔄</button>
+        <button onclick="location.reload()" class="w-full bg-slate-800 font-bold py-4 rounded-2xl text-sm cursor-pointer">RIVINCITA 🔄</button>
     </div>
     <script>
         const pool = [
@@ -112,176 +85,92 @@
             {n:"Mob (100%)",s:42},{n:"Meliodas",s:41.5},{n:"Natsu Dragneel",s:40},{n:"Denji (Hell)",s:39.5},{n:"Eren Yeager",s:38},{n:"Deku (100%)",s:37},{n:"Gon (Adult)",s:37},{n:"Meruem",s:35},{n:"Jotaro Kujo",s:33},{n:"Light Yagami",s:30}
         ].sort(() => Math.random() - 0.5);
 
-        let idx = 0;
-        let roundCounter = 0;
-        let p1 = {n:"",b:20,t:[]};
-        let p2 = {n:"",b:20,t:[]};
+        let idx = 0, roundCounter = 0, p1 = {n:"",b:20,t:[]}, p2 = {n:"",b:20,t:[]};
         function start() {
-            p1.n = document.getElementById("p1-in").value || "P1";
-            p2.n = document.getElementById("p2-in").value || "P2";
+            p1.n = document.getElementById("p1-in").value || "P1"; p2.n = document.getElementById("p2-in").value || "P2";
             document.getElementById("p1-n").innerText = p1.n; document.getElementById("p2-n").innerText = p2.n;
             document.getElementById("btn1").innerText = `Prende ${p1.n}`; document.getElementById("btn2").innerText = `Prende ${p2.n}`;
-            document.getElementById("setup").classList.add("hidden");
-            document.getElementById("game").classList.remove("hidden");
+            document.getElementById("setup").classList.add("hidden"); document.getElementById("game").classList.remove("hidden");
             show();
         }
 
         function show() {
             if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
             if (idx >= pool.length) { over(); return; }
-            
             document.getElementById("char-name").innerText = pool[idx].n;
             document.getElementById("bid").value = 1;
-            
-            // Gestione automatica turni e controlli speciali
-            checkSpecialConditions();
+            checkSpecial();
             ui();
         }
 
-        function checkSpecialConditions() {
-            let turnIndicator = document.getElementById("turn-indicator");
-            let turnBox = document.getElementById("turn-box");
-            let bidControl = document.getElementById("bid-control-container");
-            let btn1 = document.getElementById("btn1");
-            let btn2 = document.getElementById("btn2");
-            let btnSpecial = document.getElementById("btn-special");
+        function checkSpecial() {
+            let turnInd = document.getElementById("turn-indicator"), bidCtrl = document.getElementById("bid-control-container");
+            let btn1 = document.getElementById("btn1"), btn2 = document.getElementById("btn2"), btnSp = document.getElementById("btn-special");
 
-            // SCENARIO 1: Entrambi i giocatori sono a 0€ e hanno slot liberi -> Assegnazione automatica casuale
             if (p1.b <= 0 && p2.b <= 0 && p1.t.length < 5 && p2.t.length < 5) {
-                turnIndicator.innerText = "Scontro Totale a 0€ (Casuale)";
-                bidControl.classList.add("hidden");
-                btn1.classList.add("hidden");
-                btn2.classList.add("hidden");
-                btnSpecial.classList.remove("hidden");
-                btnSpecial.innerText = "Assegna Personaggio (Casuale) 🎲";
-                document.getElementById("log").innerText = "Entrambi a 0€! Clicca il pulsante dorato per assegnare il personaggio a caso tra chi ha slot liberi.";
+                turnInd.innerText = "Entrambi a 0€"; bidCtrl.classList.add("hidden"); btn1.classList.add("hidden"); btn2.classList.add("hidden");
+                btnSp.classList.remove("hidden"); document.getElementById("log").innerText = "Tutti a 0€! Clicca ALL IN per l'estrazione randomica dei personaggi rimasti.";
                 return;
             }
 
-            // SCENARIO 2: All-In Paritario a inizio asta o durante (Stesso capitale rimasto usato tutto)
-            let currentBidInput = parseFloat(document.getElementById("bid").value) || 0;
-            if (p1.b === p2.b && p1.b > 0 && p1.t.length < 5 && p2.t.length < 5) {
-                // Se l'input corrisponde esattamente al loro budget totale, mostriamo il tasto moneta
-                document.getElementById("bid").oninput = function() {
-                    let val = parseFloat(this.value);
-                    if (val === p1.b) {
-                        btn1.classList.add("hidden");
-                        btn2.classList.add("hidden");
-                        btnSpecial.classList.remove("hidden");
-                        btnSpecial.innerText = "Lancia Moneta (All-In Paritario) 🪙";
-                        document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO RILEVATO! Clicca il pulsante dorato per il lancio della moneta.";
-                    } else {
-                        btn1.classList.remove("hidden");
-                        btn2.classList.remove("hidden");
-                        btnSpecial.classList.add("hidden");
-                    }
-                };
-            } else {
-                document.getElementById("bid").oninput = null;
-            }
+            document.getElementById("bid").oninput = function() {
+                if (p1.b === p2.b && p1.b > 0 && parseFloat(this.value) === p1.b) {
+                    btn1.classList.add("hidden"); btn2.classList.add("hidden"); btnSp.classList.remove("hidden");
+                    document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per sbloccare l'asta con la moneta.";
+                } else {
+                    btn1.classList.remove("hidden"); btn2.classList.remove("hidden"); btnSp.classList.add("hidden");
+                }
+            };
 
-            // Ripristino standard se non ci sono anomalie globali
-            bidControl.classList.remove("hidden");
-            btnSpecial.classList.add("hidden");
-            btn1.classList.remove("hidden");
-            btn2.classList.remove("hidden");
-
-            // Alternanza del turno normale di apertura dell'asta
-            let opener = (roundCounter % 2 === 0) ? p1.n : p2.n;
-            turnIndicator.innerText = opener;
+            bidCtrl.classList.remove("hidden"); btnSp.classList.add("hidden"); btn1.classList.remove("hidden"); btn2.classList.remove("hidden");
+            turnInd.innerText = (roundCounter % 2 === 0) ? p1.n : p2.n;
         }
 
         function bid(pNum) {
             let cost = parseFloat(document.getElementById("bid").value);
             if (isNaN(cost) || cost < 0) return;
-
             let p = pNum === 1 ? p1 : p2;
-            
-            // Permette l'acquisizione anche a 0€ (regalo dell'avversario o se uno è rimasto a secco)
             if (p.t.length >= 5 || cost > p.b) return;
-
-            p.b -= cost; 
-            p.t.push(pool[idx]);
-            document.getElementById("log").innerText = `🎉 ${p.n} ottiene ${pool[idx].n} [${cost}€]`;
-            
-            idx++;
-            roundCounter++;
-            show();
+            p.b -= cost; p.t.push(pool[idx]);
+            document.getElementById("log").innerText = `🎉 ${p.n} prende ${pool[idx].n} a ${cost}€!`;
+            idx++; roundCounter++; show();
         }
 
         function handleSpecialDraw() {
-            // Caso A: Entrambi a 0€ -> Estrazione casuale tra chi ha slot liberi
             if (p1.b <= 0 && p2.b <= 0) {
-                let validPlayers = [];
-                if (p1.t.length < 5) validPlayers.push(1);
-                if (p2.t.length < 5) validPlayers.push(2);
-
-                if (validPlayers.length > 0) {
-                    let luckyPlayerNum = validPlayers[Math.floor(Math.random() * validPlayers.length)];
-                    let luckyPlayer = luckyPlayerNum === 1 ? p1 : p2;
-                    luckyPlayer.t.push(pool[idx]);
-                    document.getElementById("log").innerText = `🎲 Il destino assegna gratis ${pool[idx].n} a ${luckyPlayer.n}!`;
-                    idx++;
-                    roundCounter++;
-                    show();
+                let valid = []; if (p1.t.length < 5) valid.push(1); if (p2.t.length < 5) valid.push(2);
+                if (valid.length > 0) {
+                    let lucky = valid[Math.floor(Math.random() * valid.length)] === 1 ? p1 : p2;
+                    lucky.t.push(pool[idx]); document.getElementById("log").innerText = `🎲 Random: Assegnato gratis ${pool[idx].n} a ${lucky.n}!`;
+                    idx++; roundCounter++; show();
                 }
                 return;
             }
-
-            // Caso B: All-In Paritario simultaneo -> Lancio della moneta
             if (p1.b === p2.b && p1.b > 0) {
-                let cost = p1.b; // Spendono tutto
-                let coinFlip = Math.random() < 0.5 ? 1 : 2;
-                let winner = coinFlip === 1 ? p1 : p2;
-                
-                winner.b -= cost;
-                winner.t.push(pool[idx]);
-                document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n}! Si aggiudica ${pool[idx].n} andando in All-In a ${cost}€!`;
-                
-                idx++;
-                roundCounter++;
-                show();
+                let cost = p1.b, winner = Math.random() < 0.5 ? p1 : p2;
+                winner.b -= cost; winner.t.push(pool[idx]);
+                document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n} in ALL IN a ${cost}€ per ${pool[idx].n}!`;
+                idx++; roundCounter++; show();
             }
         }
 
         function ui() {
             document.getElementById("p1-b").innerText = p1.b.toFixed(1); document.getElementById("p2-b").innerText = p2.b.toFixed(1);
             document.getElementById("p1-s").innerText = p1.t.length; document.getElementById("p2-s").innerText = p2.t.length;
-            
-            document.getElementById("p1-t").innerHTML = p1.t.map(c => `<div class="bg-indigo-950/40 border border-indigo-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate shadow-sm">🔹 ${c.n}</div>`).join('');
-            document.getElementById("p2-t").innerHTML = p2.t.map(c => `<div class="bg-pink-950/40 border border-pink-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate shadow-sm">🔸 ${c.n}</div>`).join('');
-            
-            // Disabilita bottoni di chi ha gli slot pieni
-            document.getElementById("btn1").disabled = p1.t.length >= 5; 
-            document.getElementById("btn2").disabled = p2.t.length >= 5;
-            
-            if (p1.t.length >= 5) {
-                document.getElementById("card-p1").style.opacity = "0.4";
-                document.getElementById("card-p1").style.boxShadow = "none";
-                document.getElementById("btn1").classList.add("hidden");
-                document.getElementById("btn2").className = "col-span-2 bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer";
-            } else {
-                document.getElementById("card-p1").style.opacity = "1";
-            }
-            if (p2.t.length >= 5) {
-                document.getElementById("card-p2").style.opacity = "0.4";
-                document.getElementById("card-p2").style.boxShadow = "none";
-                document.getElementById("btn2").classList.add("hidden");
-                document.getElementById("btn1").className = "col-span-2 bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer";
-            } else {
-                document.getElementById("card-p2").style.opacity = "1";
-            }
+            document.getElementById("p1-t").innerHTML = p1.t.map(c => `<div class="bg-indigo-950/40 border border-indigo-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate">🔹 ${c.n}</div>`).join('');
+            document.getElementById("p2-t").innerHTML = p2.t.map(c => `<div class="bg-pink-950/40 border border-pink-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate">🔸 ${c.n}</div>`).join('');
+            document.getElementById("btn1").disabled = p1.t.length >= 5; document.getElementById("btn2").disabled = p2.t.length >= 5;
+            if (p1.t.length >= 5) { document.getElementById("card-p1").style.opacity = "0.4"; document.getElementById("btn1").classList.add("hidden"); document.getElementById("btn2").className = "col-span-2 bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm text-white"; }
+            else { document.getElementById("card-p1").style.opacity = "1"; }
+            if (p2.t.length >= 5) { document.getElementById("card-p2").style.opacity = "0.4"; document.getElementById("btn2").classList.add("hidden"); document.getElementById("btn1").className = "col-span-2 bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm text-white"; }
+            else { document.getElementById("card-p2").style.opacity = "1"; }
         }
 
         function over() {
-            document.getElementById("game").classList.add("hidden");
-            document.getElementById("end").classList.remove("hidden");
+            document.getElementById("game").classList.add("hidden"); document.getElementById("end").classList.remove("hidden");
             let s1 = p1.t.reduce((a,c)=>a+c.s,0), s2 = p2.t.reduce((a,c)=>a+c.s,0);
-            document.getElementById("details").innerHTML = `
-                <div class="flex justify-between items-center font-bold px-1"><span>Fazione ${p1.n}:</span> <span class="text-xl font-black text-indigo-400">${s1.toFixed(1)} <span class="text-xs font-normal text-slate-500">pt</span></span></div>
-                <div class="flex justify-between items-center font-bold border-t border-slate-800/80 pt-3 px-1"><span>Fazione ${p2.n}:</span> <span class="text-xl font-black text-pink-400">${s2.toFixed(1)} <span class="text-xs font-normal text-slate-500">pt</span></span></div>
-            `;
-            document.getElementById("win").innerText = s1>s2 ? `Vince ${p1.n}! 🏆` : s2>s1 ? `Vince ${p2.n}! 🏆` : "Pareggio Epico! 🤝";
+            document.getElementById("details").innerHTML = `<div class="flex justify-between font-bold"><span>${p1.n}:</span> <span class="text-indigo-400">${s1.toFixed(1)} pt</span></div><div class="flex justify-between font-bold border-t border-slate-800/80 pt-3"><span>${p2.n}:</span> <span class="text-pink-400">${s2.toFixed(1)} pt</span></div>`;
+            document.getElementById("win").innerText = s1>s2 ? `Vince ${p1.n}! 🏆` : s2>s1 ? `Vince ${p2.n}! 🏆` : "Pareggio! 🤝";
         }
     </script>
 </body>
