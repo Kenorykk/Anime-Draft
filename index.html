@@ -68,7 +68,7 @@
                 <button onclick="handleAllInParitario()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
             </div>
 
-            <!-- Pulsante Speciale di fine draft per guardare prima i team -->
+            <!-- Pulsante Speciale di fine draft -->
             <div id="reveal-controls" style="display: none;" class="py-6">
                 <span class="text-5xl animate-bounce inline-block mb-2">⚔️</span>
                 <h3 class="text-xl font-black text-slate-200 mb-4">TEAM COMPLETATI!</h3>
@@ -80,14 +80,14 @@
         <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Scegliete le offerte.</p></div>
     </div>
 
-    <!-- SCHERMATA DEL VERDETTO FINALE -->
+    <!-- SCHERMATA DEL VERDETTO FINALE MODIFICATA (Punteggi reali puliti) -->
     <div id="end" class="w-full max-w-md glass-card p-8 rounded-[2rem] text-center" style="display: none;">
         <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 mb-6">VERDETTO FINALE</h2>
         
         <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 font-bold">Miglior Guerriero Schierato</div>
         <div class="flex flex-col gap-2 text-left bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm">
-            <p><span id="res-p1-name" class="text-indigo-400 font-bold">P1</span>: <span id="res-p1-char" class="text-white">---</span> (<span id="res-p1-points">0</span> pt → <span id="res-p1-round" class="font-black text-white">0</span>)</p>
-            <p class="border-t border-slate-800/60 pt-2"><span id="res-p2-name" class="text-pink-400 font-bold">P2</span>: <span id="res-p2-char" class="text-white">---</span> (<span id="res-p2-points">0</span> pt → <span id="res-p2-round" class="font-black text-white">0</span>)</p>
+            <p><span id="res-p1-name" class="text-indigo-400 font-bold">P1</span>: <span id="res-p1-char" class="text-white">---</span> (<span id="res-p1-points" class="font-black text-white">0</span> pt)</p>
+            <p class="border-t border-slate-800/60 pt-2"><span id="res-p2-name" class="text-pink-400 font-bold">P2</span>: <span id="res-p2-char" class="text-white">---</span> (<span id="res-p2-points" class="font-black text-white">0</span> pt)</p>
         </div>
         
         <div class="py-4 mt-6 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent border-y border-emerald-500/20">
@@ -124,6 +124,7 @@
             if (p1.t.length >= 5 && p2.t.length >= 5) { freezeAndPrompt(); return; }
             if (idx >= pool.length) { freezeAndPrompt(); return; }
 
+            // Se uno finisce gli slot, assegna tutto il resto all'altro a costo zero
             if (p1.t.length >= 5 && p2.t.length < 5) {
                 while (p2.t.length < 5 && idx < pool.length) {
                     p2.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
@@ -139,6 +140,7 @@
                 ui(); freezeAndPrompt(); return;
             }
 
+            // Se entrambi sono a 0€, parte l'estrazione a sorte
             if (p1.b <= 0 && p2.b <= 0 && (p1.t.length < 5 || p2.t.length < 5)) {
                 while (p1.t.length < 5 || p2.t.length < 5) {
                     if (idx >= pool.length) break;
@@ -292,9 +294,6 @@
             
             let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0};
             let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0};
-            
-            let roundScore1 = Math.round(max1.s);
-            let roundScore2 = Math.round(max2.s);
 
             document.getElementById("res-p1-name").innerText = p1.n;
             document.getElementById("res-p2-name").innerText = p2.n;
@@ -302,16 +301,17 @@
             document.getElementById("res-p2-char").innerText = max2.n;
             document.getElementById("res-p1-points").innerText = max1.s.toFixed(1);
             document.getElementById("res-p2-points").innerText = max2.s.toFixed(1);
-            document.getElementById("res-p1-round").innerText = roundScore1;
-            document.getElementById("res-p2-round").innerText = roundScore2;
             
             let winBox = document.getElementById("final-winner-text");
-            if (roundScore1 > roundScore2) {
+            
+            let diff = Math.abs(max1.s - max2.s);
+            
+            if (diff <= 0.5) {
+                winBox.innerText = "Pareggio Decimale! 🤝";
+            } else if (max1.s > max2.s) {
                 winBox.innerText = `Vince ${p1.n}! 🏆`;
-            } else if (roundScore2 > roundScore1) {
-                winBox.innerText = `Vince ${p2.n}! 🏆`;
             } else {
-                winBox.innerText = "Pareggio! 🤝";
+                winBox.innerText = `Vince ${p2.n}! 🏆`;
             }
         }
     </script>
