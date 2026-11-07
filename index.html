@@ -46,23 +46,36 @@
             </div>
         </div>
 
-        <!-- SCHEDA DELL'ASTA -->
+        <!-- SCHEDA DELL'ASTA / BLOCCO REVELATION -->
         <div class="glass-card p-6 rounded-[2rem] text-center shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-            <div class="inline-flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1 rounded-full text-[10px] text-slate-400 font-black">TABELLONE ASTA</div>
-            <h2 id="char-name" class="text-3xl font-black mt-5 px-2 min-h-[72px] flex items-center justify-center">---</h2>
-            <div id="turn-box" class="my-3 py-1 px-3 bg-slate-950/40 rounded-xl inline-block border border-slate-800/50 text-xs">
-                Apre l'asta: <span id="turn-indicator" class="font-bold text-yellow-400">---</span>
+            
+            <!-- Contenitore Standard dell'Asta -->
+            <div id="auction-controls">
+                <div class="inline-flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1 rounded-full text-[10px] text-slate-400 font-black">TABELLONE ASTA</div>
+                <h2 id="char-name" class="text-3xl font-black mt-5 px-2 min-h-[72px] flex items-center justify-center">---</h2>
+                <div id="turn-box" class="my-3 py-1 px-3 bg-slate-950/40 rounded-xl inline-block border border-slate-800/50 text-xs">
+                    Apre l'asta: <span id="turn-indicator" class="font-bold text-yellow-400">---</span>
+                </div>
+                <div id="bid-control-container" class="mt-2 bg-slate-950/50 border border-slate-800/60 p-3 rounded-2xl max-w-[160px] mx-auto flex items-center justify-center gap-1">
+                    <input type="number" id="bid" min="0" step="1" value="1" class="w-20 bg-transparent text-center text-3xl font-black text-white focus:outline-none">
+                    <span class="text-xl font-extrabold text-emerald-400">€</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-5">
+                    <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P1</button>
+                    <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P2</button>
+                </div>
+                <button onclick="handleAllInParitario()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
             </div>
-            <div id="bid-control-container" class="mt-2 bg-slate-950/50 border border-slate-800/60 p-3 rounded-2xl max-w-[160px] mx-auto flex items-center justify-center gap-1">
-                <input type="number" id="bid" min="0" step="1" value="1" class="w-20 bg-transparent text-center text-3xl font-black text-white focus:outline-none">
-                <span class="text-xl font-extrabold text-emerald-400">€</span>
+
+            <!-- Pulsante Speciale di fine draft per guardare prima i team -->
+            <div id="reveal-controls" style="display: none;" class="py-6">
+                <span class="text-5xl animate-bounce inline-block mb-2">⚔️</span>
+                <h3 class="text-xl font-black text-slate-200 mb-4">TEAM COMPLETATI!</h3>
+                <button onclick="over()" class="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-slate-950 font-black py-4 rounded-2xl text-sm tracking-wider cursor-pointer shadow-lg active:scale-[0.98] transition">
+                    SCOPRI IL VINCITORE 👑
+                </button>
             </div>
-            <div class="grid grid-cols-2 gap-3 mt-5">
-                <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P1</button>
-                <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P2</button>
-            </div>
-            <button onclick="handleAllInParitario()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
         </div>
         <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Scegliete le offerte.</p></div>
     </div>
@@ -108,8 +121,23 @@
         }
 
         function show() {
-            if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
-            if (idx >= pool.length) { over(); return; }
+            if (p1.t.length >= 5 && p2.t.length >= 5) { freezeAndPrompt(); return; }
+            if (idx >= pool.length) { freezeAndPrompt(); return; }
+
+            if (p1.t.length >= 5 && p2.t.length < 5) {
+                while (p2.t.length < 5 && idx < pool.length) {
+                    p2.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
+                    idx++;
+                }
+                ui(); freezeAndPrompt(); return;
+            }
+            if (p2.t.length >= 5 && p1.t.length < 5) {
+                while (p1.t.length < 5 && idx < pool.length) {
+                    p1.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
+                    idx++;
+                }
+                ui(); freezeAndPrompt(); return;
+            }
 
             if (p1.b <= 0 && p2.b <= 0 && (p1.t.length < 5 || p2.t.length < 5)) {
                 while (p1.t.length < 5 || p2.t.length < 5) {
@@ -122,15 +150,19 @@
                     lucky.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
                     idx++;
                 }
-                ui();
-                over();
-                return;
+                ui(); freezeAndPrompt(); return;
             }
 
             document.getElementById("char-name").innerText = pool[idx].n;
             document.getElementById("bid").value = 1;
             checkSpecial();
             ui();
+        }
+
+        function freezeAndPrompt() {
+            document.getElementById("auction-controls").style.display = "none";
+            document.getElementById("reveal-controls").style.display = "block";
+            document.getElementById("log").innerText = "Asta terminata con successo! Controllate pure i vostri team sul tabellone. Quando siete pronti, premete il tasto dorato per scoprire chi vince!";
         }
 
         function checkSpecial() {
@@ -157,7 +189,6 @@
                 turnInd.innerText = (roundCounter % 2 === 0) ? p1.n : p2.n;
             }
         }
-
         function bid(pNum) {
             let inputVal = parseFloat(document.getElementById("bid").value);
             
