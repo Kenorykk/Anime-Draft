@@ -19,7 +19,7 @@
 
     <!-- SETUP INIZIALE -->
     <div id="setup" class="w-full max-w-md glass-card p-8 rounded-[2rem] shadow-2xl text-center">
-        <h1 class="text-4xl font-black bg-clip-text text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-6">ANIME DRAFT</h1>
+        <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-6">ANIME DRAFT</h1>
         <div class="space-y-4 mb-8">
             <input type="text" id="p1-in" value="Giocatore 1" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white text-center font-bold focus:border-indigo-500 focus:outline-none">
             <input type="text" id="p2-in" value="Giocatore 2" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white text-center font-bold focus:border-pink-500 focus:outline-none">
@@ -62,7 +62,7 @@
                 <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P1</button>
                 <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P2</button>
             </div>
-            <button onclick="handleSpecialDraw()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
+            <button onclick="handleAllInParitario()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
         </div>
         <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Impostate il prezzo. Si può mettere 0€ per regalare il personaggio.</p></div>
     </div>
@@ -95,8 +95,26 @@
         }
 
         function show() {
+            // Se entrambi hanno finito i 5 slot, il gioco finisce immediatamente
             if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
             if (idx >= pool.length) { over(); return; }
+
+            // AUTOMAZIONE TOTALE 0€: Se entrambi sono a 0€, assegna a ciclo continuo fino alla fine senza tasti
+            if (p1.b <= 0 && p2.b <= 0 && p1.t.length < 5 && p2.t.length < 5) {
+                while (p1.t.length < 5 || p2.t.length < 5) {
+                    if (idx >= pool.length) break;
+                    let valid = [];
+                    if (p1.t.length < 5) valid.push(1);
+                    if (p2.t.length < 5) valid.push(2);
+                    let lucky = valid[Math.floor(Math.random() * valid.length)] === 1 ? p1 : p2;
+                    lucky.t.push(pool[idx]);
+                    idx++;
+                }
+                ui(); // Aggiorna la grafica con tutti i personaggi inseriti
+                setTimeout(over, 800); // Mostra il verdetto finale dopo una brevissima pausa
+                return;
+            }
+
             document.getElementById("char-name").innerText = pool[idx].n;
             document.getElementById("bid").value = 1;
             checkSpecial();
@@ -107,16 +125,10 @@
             let turnInd = document.getElementById("turn-indicator"), bidCtrl = document.getElementById("bid-control-container");
             let btn1 = document.getElementById("btn1"), btn2 = document.getElementById("btn2"), btnSp = document.getElementById("btn-special");
 
-            if (p1.b <= 0 && p2.b <= 0 && p1.t.length < 5 && p2.t.length < 5) {
-                turnInd.innerText = "Entrambi a 0€"; bidCtrl.classList.add("hidden"); btn1.classList.add("hidden"); btn2.classList.add("hidden");
-                btnSp.classList.remove("hidden"); document.getElementById("log").innerText = "Tutti a 0€! Clicca ALL IN per l'estrazione randomica dei personaggi rimasti.";
-                return;
-            }
-
             document.getElementById("bid").oninput = function() {
                 if (p1.b === p2.b && p1.b > 0 && parseFloat(this.value) === p1.b) {
                     btn1.classList.add("hidden"); btn2.classList.add("hidden"); btnSp.classList.remove("hidden");
-                    document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per sbloccare l'asta con la moneta.";
+                    document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per il lancio della moneta.";
                 } else {
                     btn1.classList.remove("hidden"); btn2.classList.remove("hidden"); btnSp.classList.add("hidden");
                 }
@@ -133,24 +145,19 @@
             if (p.t.length >= 5 || cost > p.b) return;
             p.b -= cost; p.t.push(pool[idx]);
             document.getElementById("log").innerText = `🎉 ${p.n} prende ${pool[idx].n} a ${cost}€!`;
-            idx++; roundCounter++; show();
+            idx++; roundCounter++; 
+            ui(); // Forza l'aggiornamento visivo immediato del team appena si preme il tasto
+            setTimeout(show, 400);
         }
 
-        function handleSpecialDraw() {
-            if (p1.b <= 0 && p2.b <= 0) {
-                let valid = []; if (p1.t.length < 5) valid.push(1); if (p2.t.length < 5) valid.push(2);
-                if (valid.length > 0) {
-                    let lucky = valid[Math.floor(Math.random() * valid.length)] === 1 ? p1 : p2;
-                    lucky.t.push(pool[idx]); document.getElementById("log").innerText = `🎲 Random: Assegnato gratis ${pool[idx].n} a ${lucky.n}!`;
-                    idx++; roundCounter++; show();
-                }
-                return;
-            }
+        function handleAllInParitario() {
             if (p1.b === p2.b && p1.b > 0) {
                 let cost = p1.b, winner = Math.random() < 0.5 ? p1 : p2;
                 winner.b -= cost; winner.t.push(pool[idx]);
                 document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n} in ALL IN a ${cost}€ per ${pool[idx].n}!`;
-                idx++; roundCounter++; show();
+                idx++; roundCounter++; 
+                ui();
+                setTimeout(show, 400);
             }
         }
 
@@ -160,17 +167,41 @@
             document.getElementById("p1-t").innerHTML = p1.t.map(c => `<div class="bg-indigo-950/40 border border-indigo-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate">🔹 ${c.n}</div>`).join('');
             document.getElementById("p2-t").innerHTML = p2.t.map(c => `<div class="bg-pink-950/40 border border-pink-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate">🔸 ${c.n}</div>`).join('');
             document.getElementById("btn1").disabled = p1.t.length >= 5; document.getElementById("btn2").disabled = p2.t.length >= 5;
-            if (p1.t.length >= 5) { document.getElementById("card-p1").style.opacity = "0.4"; document.getElementById("btn1").classList.add("hidden"); document.getElementById("btn2").className = "col-span-2 bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm text-white"; }
+            
+            if (p1.t.length >= 5) { document.getElementById("card-p1").style.opacity = "0.4"; document.getElementById("btn1").classList.add("hidden"); document.getElementById("btn2").className = "col-span-2 bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer"; }
             else { document.getElementById("card-p1").style.opacity = "1"; }
-            if (p2.t.length >= 5) { document.getElementById("card-p2").style.opacity = "0.4"; document.getElementById("btn2").classList.add("hidden"); document.getElementById("btn1").className = "col-span-2 bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm text-white"; }
+            if (p2.t.length >= 5) { document.getElementById("card-p2").style.opacity = "0.4"; document.getElementById("btn2").classList.add("hidden"); document.getElementById("btn1").className = "col-span-2 bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer"; }
             else { document.getElementById("card-p2").style.opacity = "1"; }
         }
 
         function over() {
             document.getElementById("game").classList.add("hidden"); document.getElementById("end").classList.remove("hidden");
-            let s1 = p1.t.reduce((a,c)=>a+c.s,0), s2 = p2.t.reduce((a,c)=>a+c.s,0);
-            document.getElementById("details").innerHTML = `<div class="flex justify-between font-bold"><span>${p1.n}:</span> <span class="text-indigo-400">${s1.toFixed(1)} pt</span></div><div class="flex justify-between font-bold border-t border-slate-800/80 pt-3"><span>${p2.n}:</span> <span class="text-pink-400">${s2.toFixed(1)} pt</span></div>`;
-            document.getElementById("win").innerText = s1>s2 ? `Vince ${p1.n}! 🏆` : s2>s1 ? `Vince ${p2.n}! 🏆` : "Pareggio! 🤝";
+            
+            // Trova il personaggio col punteggio più alto per P1 e per P2
+            let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max, p1.t[0]) : {n:"Nessuno", s:0};
+            let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max, p2.t[0]) : {n:"Nessuno", s:0};
+            
+            // Arrotondamento all'intero più vicino delle carte migliori (es: 99.5 e 99 diventano entrambi 100)
+            let roundScore1 = Math.round(max1.s);
+            let roundScore2 = Math.round(max2.s);
+
+            document.getElementById("details").innerHTML = `
+                <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 font-bold">Miglior Guerriero Schierato</div>
+                <div class="flex flex-col gap-2 text-left bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                    <p><span class="text-indigo-400 font-bold">${p1.n}:</span> ${max1.n} (${max1.s.toFixed(1)} pt → <span class="font-black text-white">${roundScore1}</span>)</p>
+                    <p class="border-t border-slate-800/60 pt-2"><span class="text-pink-400 font-bold">${p2.n}:</span> ${max2.n} (${max2.s.toFixed(1)} pt → <span class="font-black text-white">${roundScore2}</span>)</p>
+                </div>
+            `;
+            
+            let finalVerdict = "";
+            if (roundScore1 > roundScore2) {
+                finalVerdict = `Vince ${p1.n}! 🏆`;
+            } else if (roundScore2 > roundScore1) {
+                finalVerdict = `Vince ${p2.n}! 🏆`;
+            } else {
+                finalVerdict = "Pareggio Decimale! 🤝";
+            }
+            document.getElementById("win").innerText = finalVerdict;
         }
     </script>
 </body>
