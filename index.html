@@ -67,7 +67,7 @@
         <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Gestione delle offerte in corso.</p></div>
     </div>
 
-    <!-- RECAP FINALE VISIBILE IN OGNI SCENARIO -->
+    <!-- RECAP FINALE CORRETTO -->
     <div id="end" class="w-full max-w-md glass-card p-8 rounded-[2rem] text-center hidden space-y-6">
         <div>
             <span class="text-5xl">👑</span>
@@ -106,7 +106,8 @@
             if (p1.t.length >= 5 && p2.t.length >= 5) { over(); return; }
             if (idx >= pool.length) { over(); return; }
 
-            if (p1.b <= 0 && p2.b <= 0 && p1.t.length < 5 && p2.t.length < 5) {
+            // AUTOMAZIONE TOTALE: Scatta SOLO SE ENTRAMBI hanno finito i soldi ma hanno ancora slot liberi
+            if (p1.b <= 0 && p2.b <= 0 && (p1.t.length < 5 || p2.t.length < 5)) {
                 while (p1.t.length < 5 || p2.t.length < 5) {
                     if (idx >= pool.length) break;
                     let valid = [];
@@ -133,6 +134,7 @@
 
             document.getElementById("bid").oninput = function() {
                 let val = parseFloat(this.value);
+                // L'ALL IN dorato compare SOLO SE i due budget sono uguali, maggiori di zero e viene digitata la cifra esatta del budget
                 if (p1.b === p2.b && p1.b > 0 && val === p1.b) {
                     btn1.classList.add("hidden"); btn2.classList.add("hidden"); btnSp.classList.remove("hidden");
                     document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per il lancio della moneta.";
@@ -143,6 +145,7 @@
 
             bidCtrl.classList.remove("hidden"); btnSp.classList.add("hidden"); btn1.classList.remove("hidden"); btn2.classList.remove("hidden");
             
+            // Se un giocatore è a 0€ e l'altro ha ancora soldi, apre sempre chi ha il budget
             if (p1.b > 0 && p2.b <= 0) {
                 turnInd.innerText = p1.n;
             } else if (p2.b > 0 && p1.b <= 0) {
@@ -210,8 +213,10 @@
 
         function handleAllInParitario() {
             if (p1.b === p2.b && p1.b > 0) {
-                let cost = p1.b, winner = Math.random() < 0.5 ? p1 : p2;
-                winner.b -= cost; winner.t.push(pool[idx]);
+                let cost = p1.b;
+                let winner = Math.random() < 0.5 ? p1 : p2;
+                winner.b -= cost; 
+                winner.t.push(pool[idx]);
                 document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n} in ALL IN a ${cost}€ per ${pool[idx].n}!`;
                 idx++; roundCounter++; 
                 ui();
@@ -242,7 +247,10 @@
             let roundScore1 = Math.round(max1.s);
             let roundScore2 = Math.round(max2.s);
 
-            document.getElementById("details").innerHTML = `
+            let detailsBox = document.getElementById("details");
+            let winBox = document.getElementById("win");
+
+            detailsBox.innerHTML = `
                 <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 font-bold text-center">Miglior Guerriero Schierato</div>
                 <div class="flex flex-col gap-2 text-left bg-slate-950 p-3 rounded-xl border border-slate-800">
                     <p><span class="text-indigo-400 font-bold">${p1.n}:</span> ${max1.n} (${max1.s.toFixed(1)} pt → <span class="font-black text-white">${roundScore1}</span>)</p>
@@ -250,7 +258,6 @@
                 </div>
             `;
             
-            let winBox = document.getElementById("win");
             if (roundScore1 > roundScore2) {
                 winBox.innerText = `Vince ${p1.n}! 🏆`;
             } else if (roundScore2 > roundScore1) {
