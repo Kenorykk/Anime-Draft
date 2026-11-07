@@ -36,25 +36,25 @@
     <!-- SCHERMATA DI GIOCO -->
     <div id="game" class="w-full max-w-md hidden space-y-5">
         
-        <!-- BOX INDIPENDENTI DEI GIOCATORI (Bordi Arrotondati Premium) -->
+        <!-- BOX INDIPENDENTI DEI GIOCATORI -->
         <div class="grid grid-cols-2 gap-4 text-center">
             <!-- Box Personale P1 -->
             <div id="card-p1" class="glass-card p-5 rounded-[2rem] border-b-4 border-indigo-500 neon-p1 transition-all duration-300">
                 <p id="p1-n" class="font-black text-xs uppercase tracking-widest text-indigo-400 truncate">P1</p>
                 <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p1-b">20</span><span class="text-lg font-bold ml-0.5">€</span></p>
-                <div class="mt-2 inline-flex px-2.5 py-0.5 bg-indigo-950/50 border border-indigo-800/30 rounded-full text-[10px] font-black text-indigo-300">SLOT: <span id="p1-s" class="text-white">0</span>/5</div>
+                <div class="mt-2 inline-block px-2.5 py-0.5 bg-indigo-950/50 border border-indigo-800/30 rounded-full text-[10px] font-black text-indigo-300">SLOT: <span id="p1-s" class="text-white">0</span>/5</div>
                 <div id="p1-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div>
             </div>
             <!-- Box Personale P2 -->
             <div id="card-p2" class="glass-card p-5 rounded-[2rem] border-b-4 border-pink-500 neon-p2 transition-all duration-300">
                 <p id="p2-n" class="font-black text-xs uppercase tracking-widest text-pink-400 truncate">P2</p>
                 <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p2-b">20</span><span class="text-lg font-bold ml-0.5">€</span></p>
-                <div class="mt-2 inline-flex px-2.5 py-0.5 bg-pink-950/50 border border-pink-800/30 rounded-full text-[10px] font-black text-pink-300">SLOT: <span id="p2-s" class="text-white">0</span>/5</div>
+                <div class="mt-2 inline-block px-2.5 py-0.5 bg-pink-950/50 border border-pink-800/30 rounded-full text-[10px] font-black text-pink-300">SLOT: <span id="p2-s" class="text-white">0</span>/5</div>
                 <div id="p2-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div>
             </div>
         </div>
 
-        <!-- CASELLA DELL'ASTA COMPLETAMENTE SEPARATA -->
+        <!-- CASELLA DELL'ASTA SEPARATA -->
         <div class="glass-card p-6 rounded-[2rem] text-center shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
             
@@ -66,22 +66,30 @@
             <h2 id="char-name" class="text-3xl font-black mt-5 text-white tracking-tight leading-tight px-2 min-h-[72px] flex items-center justify-center">---</h2>
             
             <!-- AVVISO DI TURNO APERTURA ASTA -->
-            <div class="my-3 py-1 px-3 bg-slate-950/40 rounded-xl inline-block border border-slate-800/50">
+            <div id="turn-box" class="my-3 py-1 px-3 bg-slate-950/40 rounded-xl inline-block border border-slate-800/50">
                 <p class="text-xs text-slate-300 font-medium">Apre l'asta: <span id="turn-indicator" class="font-bold text-yellow-400">---</span></p>
             </div>
 
-            <div class="mt-2 bg-slate-950/50 border border-slate-800/60 p-3 rounded-2xl max-w-[160px] mx-auto flex items-center justify-center gap-1">
-                <input type="number" id="bid" min="0.5" step="0.5" value="1" class="w-20 bg-transparent text-center text-3xl font-black text-white focus:outline-none">
+            <!-- CONTROLLO PREZZO -->
+            <div id="bid-control-container" class="mt-2 bg-slate-950/50 border border-slate-800/60 p-3 rounded-2xl max-w-[160px] mx-auto flex items-center justify-center gap-1">
+                <input type="number" id="bid" min="0" step="0.5" value="1" class="w-20 bg-transparent text-center text-3xl font-black text-white focus:outline-none">
                 <span class="text-xl font-extrabold text-emerald-400">€</span>
             </div>
+
+            <!-- BOTTONI ASSEGNAZIONE -->
             <div class="grid grid-cols-2 gap-3 mt-5">
                 <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm active:scale-[0.96] transition cursor-pointer text-white">Prende P1</button>
                 <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm active:scale-[0.96] transition cursor-pointer text-white">Prende P2</button>
             </div>
+
+            <!-- BOTTONE LANCO MONETA ALL-IN / ASSEGNAZIONE RANDOM 0€ -->
+            <button onclick="handleSpecialDraw()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-3 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer uppercase tracking-wider">
+                Lancia Moneta / Random 🎲
+            </button>
         </div>
         
         <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center">
-            <p id="log" class="text-xs text-yellow-400/90 font-medium italic">Selezionate chi acquista impostando il prezzo in euro.</p>
+            <p id="log" class="text-xs text-yellow-400/90 font-medium italic">Selezionate l'esito dell'asta.</p>
         </div>
     </div>
 
@@ -105,7 +113,7 @@
         ].sort(() => Math.random() - 0.5);
 
         let idx = 0;
-        let roundCounter = 0; // Conta i round effettivi per alternare l'apertura
+        let roundCounter = 0;
         let p1 = {n:"",b:20,t:[]};
         let p2 = {n:"",b:20,t:[]};
         function start() {
@@ -125,22 +133,115 @@
             document.getElementById("char-name").innerText = pool[idx].n;
             document.getElementById("bid").value = 1;
             
-            // Alterna in automatico chi apre l'asta ad ogni round
-            let opener = (roundCounter % 2 === 0) ? p1.n : p2.n;
-            document.getElementById("turn-indicator").innerText = opener;
-            
+            // Gestione automatica turni e controlli speciali
+            checkSpecialConditions();
             ui();
+        }
+
+        function checkSpecialConditions() {
+            let turnIndicator = document.getElementById("turn-indicator");
+            let turnBox = document.getElementById("turn-box");
+            let bidControl = document.getElementById("bid-control-container");
+            let btn1 = document.getElementById("btn1");
+            let btn2 = document.getElementById("btn2");
+            let btnSpecial = document.getElementById("btn-special");
+
+            // SCENARIO 1: Entrambi i giocatori sono a 0€ e hanno slot liberi -> Assegnazione automatica casuale
+            if (p1.b <= 0 && p2.b <= 0 && p1.t.length < 5 && p2.t.length < 5) {
+                turnIndicator.innerText = "Scontro Totale a 0€ (Casuale)";
+                bidControl.classList.add("hidden");
+                btn1.classList.add("hidden");
+                btn2.classList.add("hidden");
+                btnSpecial.classList.remove("hidden");
+                btnSpecial.innerText = "Assegna Personaggio (Casuale) 🎲";
+                document.getElementById("log").innerText = "Entrambi a 0€! Clicca il pulsante dorato per assegnare il personaggio a caso tra chi ha slot liberi.";
+                return;
+            }
+
+            // SCENARIO 2: All-In Paritario a inizio asta o durante (Stesso capitale rimasto usato tutto)
+            let currentBidInput = parseFloat(document.getElementById("bid").value) || 0;
+            if (p1.b === p2.b && p1.b > 0 && p1.t.length < 5 && p2.t.length < 5) {
+                // Se l'input corrisponde esattamente al loro budget totale, mostriamo il tasto moneta
+                document.getElementById("bid").oninput = function() {
+                    let val = parseFloat(this.value);
+                    if (val === p1.b) {
+                        btn1.classList.add("hidden");
+                        btn2.classList.add("hidden");
+                        btnSpecial.classList.remove("hidden");
+                        btnSpecial.innerText = "Lancia Moneta (All-In Paritario) 🪙";
+                        document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO RILEVATO! Clicca il pulsante dorato per il lancio della moneta.";
+                    } else {
+                        btn1.classList.remove("hidden");
+                        btn2.classList.remove("hidden");
+                        btnSpecial.classList.add("hidden");
+                    }
+                };
+            } else {
+                document.getElementById("bid").oninput = null;
+            }
+
+            // Ripristino standard se non ci sono anomalie globali
+            bidControl.classList.remove("hidden");
+            btnSpecial.classList.add("hidden");
+            btn1.classList.remove("hidden");
+            btn2.classList.remove("hidden");
+
+            // Alternanza del turno normale di apertura dell'asta
+            let opener = (roundCounter % 2 === 0) ? p1.n : p2.n;
+            turnIndicator.innerText = opener;
         }
 
         function bid(pNum) {
             let cost = parseFloat(document.getElementById("bid").value);
+            if (isNaN(cost) || cost < 0) return;
+
             let p = pNum === 1 ? p1 : p2;
-            if (p.t.length >= 5 || cost > p.b || cost <= 0) return;
-            p.b -= cost; p.t.push(pool[idx]);
+            
+            // Permette l'acquisizione anche a 0€ (regalo dell'avversario o se uno è rimasto a secco)
+            if (p.t.length >= 5 || cost > p.b) return;
+
+            p.b -= cost; 
+            p.t.push(pool[idx]);
             document.getElementById("log").innerText = `🎉 ${p.n} ottiene ${pool[idx].n} [${cost}€]`;
+            
             idx++;
-            roundCounter++; // Incrementa per passare il turno di apertura al prossimo round
+            roundCounter++;
             show();
+        }
+
+        function handleSpecialDraw() {
+            // Caso A: Entrambi a 0€ -> Estrazione casuale tra chi ha slot liberi
+            if (p1.b <= 0 && p2.b <= 0) {
+                let validPlayers = [];
+                if (p1.t.length < 5) validPlayers.push(1);
+                if (p2.t.length < 5) validPlayers.push(2);
+
+                if (validPlayers.length > 0) {
+                    let luckyPlayerNum = validPlayers[Math.floor(Math.random() * validPlayers.length)];
+                    let luckyPlayer = luckyPlayerNum === 1 ? p1 : p2;
+                    luckyPlayer.t.push(pool[idx]);
+                    document.getElementById("log").innerText = `🎲 Il destino assegna gratis ${pool[idx].n} a ${luckyPlayer.n}!`;
+                    idx++;
+                    roundCounter++;
+                    show();
+                }
+                return;
+            }
+
+            // Caso B: All-In Paritario simultaneo -> Lancio della moneta
+            if (p1.b === p2.b && p1.b > 0) {
+                let cost = p1.b; // Spendono tutto
+                let coinFlip = Math.random() < 0.5 ? 1 : 2;
+                let winner = coinFlip === 1 ? p1 : p2;
+                
+                winner.b -= cost;
+                winner.t.push(pool[idx]);
+                document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n}! Si aggiudica ${pool[idx].n} andando in All-In a ${cost}€!`;
+                
+                idx++;
+                roundCounter++;
+                show();
+            }
         }
 
         function ui() {
@@ -150,19 +251,25 @@
             document.getElementById("p1-t").innerHTML = p1.t.map(c => `<div class="bg-indigo-950/40 border border-indigo-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate shadow-sm">🔹 ${c.n}</div>`).join('');
             document.getElementById("p2-t").innerHTML = p2.t.map(c => `<div class="bg-pink-950/40 border border-pink-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate shadow-sm">🔸 ${c.n}</div>`).join('');
             
-            document.getElementById("btn1").disabled = p1.t.length >= 5; document.getElementById("btn2").disabled = p2.t.length >= 5;
+            // Disabilita bottoni di chi ha gli slot pieni
+            document.getElementById("btn1").disabled = p1.t.length >= 5; 
+            document.getElementById("btn2").disabled = p2.t.length >= 5;
             
             if (p1.t.length >= 5) {
                 document.getElementById("card-p1").style.opacity = "0.4";
                 document.getElementById("card-p1").style.boxShadow = "none";
-                document.getElementById("btn1").style.display = "none";
+                document.getElementById("btn1").classList.add("hidden");
                 document.getElementById("btn2").className = "col-span-2 bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer";
+            } else {
+                document.getElementById("card-p1").style.opacity = "1";
             }
             if (p2.t.length >= 5) {
                 document.getElementById("card-p2").style.opacity = "0.4";
                 document.getElementById("card-p2").style.boxShadow = "none";
-                document.getElementById("btn2").style.display = "none";
+                document.getElementById("btn2").classList.add("hidden");
                 document.getElementById("btn1").className = "col-span-2 bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm text-white cursor-pointer";
+            } else {
+                document.getElementById("card-p2").style.opacity = "1";
             }
         }
 
