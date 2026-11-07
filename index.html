@@ -1,319 +1,308 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Draft con Asta</title>
-    <script src="https://jsdelivr.net"></script>
-    <style>
-        body { 
-            background: linear-gradient(135deg, #0b0f19 0%, #17153b 50%, #0b0f19 100%);
-            color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent;
-        }
-        .neon-p1 { box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2); }
-        .neon-p2 { box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.2); }
-        .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); }
-    </style>
-</head>
-<body class="p-4 md:p-6 min-h-screen flex flex-col items-center justify-center select-none antialiased">
-
-    <!-- SCHERMATA INSERIMENTO NOMI -->
-    <div id="setup" class="w-full max-w-md glass-card p-8 rounded-[2rem] shadow-2xl text-center" style="display: block;">
-        <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-6">ANIME DRAFT</h1>
-        <div class="space-y-4 mb-8">
-            <input type="text" id="p1-in" value="Giocatore 1" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white text-center font-bold focus:border-indigo-500 focus:outline-none">
-            <input type="text" id="p2-in" value="Giocatore 2" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white text-center font-bold focus:border-pink-500 focus:outline-none">
-        </div>
-        <button onclick="start()" class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 font-black py-4 rounded-2xl cursor-pointer">ENTRA NELL'ARENA ⚔️</button>
-    </div>
-
-    <!-- SCHERMATA CENTRALE DEL GIOCO -->
-    <div id="game" class="w-full max-w-md space-y-5" style="display: none;">
-        <div class="grid grid-cols-2 gap-4 text-center">
-            <!-- Pannello Personale P1 -->
-            <div id="card-p1" class="glass-card p-5 rounded-[2rem] border-b-4 border-indigo-500 neon-p1">
-                <p id="p1-n" class="font-black text-xs text-indigo-400 truncate">P1</p>
-                <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p1-b">20</span>€</p>
-                <div class="mt-2 inline-flex px-2.5 py-0.5 bg-indigo-950/50 border border-indigo-800/30 rounded-full text-[10px] font-black">SLOT: <span id="p1-s" class="text-white">0</span>/5</div>
-                <div id="p1-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div>
-            </div>
-            <!-- Pannello Personale P2 -->
-            <div id="card-p2" class="glass-card p-5 rounded-[2rem] border-b-4 border-pink-500 neon-p2">
-                <p id="p2-n" class="font-black text-xs text-pink-400 truncate">P2</p>
-                <p class="text-3xl font-black text-emerald-400 mt-1"><span id="p2-b">20</span>€</p>
-                <div class="mt-2 inline-flex px-2.5 py-0.5 bg-pink-950/50 border border-pink-800/30 rounded-full text-[10px] font-black">SLOT: <span id="p2-s" class="text-white">0</span>/5</div>
-                <div id="p2-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div>
-            </div>
-        </div>
-
-        <!-- SCHEDA DELL'ASTA / BLOCCO REVELATION -->
-        <div class="glass-card p-6 rounded-[2rem] text-center shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-            
-            <!-- Contenitore Standard dell'Asta -->
-            <div id="auction-controls">
-                <div class="inline-flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-3 py-1 rounded-full text-[10px] text-slate-400 font-black">TABELLONE ASTA</div>
-                <h2 id="char-name" class="text-3xl font-black mt-5 px-2 min-h-[72px] flex items-center justify-center">---</h2>
-                <div id="turn-box" class="my-3 py-1 px-3 bg-slate-950/40 rounded-xl inline-block border border-slate-800/50 text-xs">
-                    Apre l'asta: <span id="turn-indicator" class="font-bold text-yellow-400">---</span>
-                </div>
-                <div id="bid-control-container" class="mt-2 bg-slate-950/50 border border-slate-800/60 p-3 rounded-2xl max-w-[160px] mx-auto flex items-center justify-center gap-1">
-                    <input type="number" id="bid" min="0" step="1" value="1" class="w-20 bg-transparent text-center text-3xl font-black text-white focus:outline-none">
-                    <span class="text-xl font-extrabold text-emerald-400">€</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mt-5">
-                    <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P1</button>
-                    <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P2</button>
-                </div>
-                <button onclick="handleAllInParitario()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-amber-500 to-yellow-500 font-black py-4 rounded-xl text-sm text-slate-950 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button>
-            </div>
-
-            <!-- Pulsante Speciale di fine draft -->
-            <div id="reveal-controls" style="display: none;" class="py-6">
-                <span class="text-5xl animate-bounce inline-block mb-2">⚔️</span>
-                <h3 class="text-xl font-black text-slate-200 mb-4">TEAM COMPLETATI!</h3>
-                <button onclick="over()" class="w-full bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 text-slate-950 font-black py-4 rounded-2xl text-sm tracking-wider cursor-pointer shadow-lg active:scale-[0.98] transition">
-                    SCOPRI IL VINCITORE 👑
-                </button>
-            </div>
-        </div>
-        <div class="bg-slate-950/40 border border-slate-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400/90 italic"><p id="log">Scegliete le offerte.</p></div>
-    </div>
-
-    <!-- SCHERMATA DEL VERDETTO FINALE MODIFICATA (Punteggi reali puliti) -->
-    <div id="end" class="w-full max-w-md glass-card p-8 rounded-[2rem] text-center" style="display: none;">
-        <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 mb-6">VERDETTO FINALE</h2>
-        
-        <div class="text-xs text-slate-400 uppercase tracking-wider mb-2 font-bold">Miglior Guerriero Schierato</div>
-        <div class="flex flex-col gap-2 text-left bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm">
-            <p><span id="res-p1-name" class="text-indigo-400 font-bold">P1</span>: <span id="res-p1-char" class="text-white">---</span> (<span id="res-p1-points" class="font-black text-white">0</span> pt)</p>
-            <p class="border-t border-slate-800/60 pt-2"><span id="res-p2-name" class="text-pink-400 font-bold">P2</span>: <span id="res-p2-char" class="text-white">---</span> (<span id="res-p2-points" class="font-black text-white">0</span> pt)</p>
-        </div>
-        
-        <div class="py-4 mt-6 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent border-y border-emerald-500/20">
-            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-black">Esito dello Scontro Diretto</p>
-            <div id="final-winner-text" class="text-3xl font-black text-emerald-400 uppercase tracking-wide mt-2">---</div>
-        </div>
-
-        <button onclick="location.reload()" class="w-full mt-6 bg-slate-800 hover:bg-slate-700 font-bold py-4 rounded-2xl text-sm cursor-pointer transition">RIVINCITA 🔄</button>
-    </div>
-    <script>
-        const pool = [
-            {n:"Hajun",s:99.5},{n:"Featherine",s:99},{n:"Akuto Sai",s:98.5},{n:"Void Shiki",s:98},{n:"Simon (STTGL)",s:95.5},{n:"Kiana Kaslana",s:95},{n:"Rimuru Tempest",s:95},{n:"Wang Ling",s:94},{n:"Sinbad",s:92},{n:"Anos Voldigoad",s:91},
-            {n:"Altair",s:90.5},{n:"Anti-Spiral",s:90},{n:"Ultimate Madoka",s:89},{n:"Space Ishtar",s:88.5},{n:"CC Goku",s:87},{n:"Gilgamesh",s:86},{n:"Zeno",s:85.5},{n:"Shinra Kusakabe",s:85},{n:"Yhwach",s:82},{n:"Whis",s:81.5},
-            {n:"Beerus",s:80},{n:"Sailor Moon",s:78},{n:"Kaguya Otsutsuki",s:75},{n:"Saitama",s:74},{n:"Madara Uchiha",s:72},{n:"Naruto Uzumaki",s:70},{n:"Ichigo Kurosaki",s:68},{n:"Giorno (GER)",s:66},{n:"Accelerator",s:65},{n:"Funny Valentine",s:64},
-            {n:"Sung Jin-Woo",s:60},{n:"Mio Takamiya",s:58},{n:"Satoru Gojo",s:55.5},{n:"Sukuna",s:55},{n:"Makima",s:52},{n:"Alucard",s:50},{n:"Devilman",s:49.5},{n:"Luffy (Gear 5)",s:46},{n:"Kaido",s:45},{n:"Tatsumaki",s:43},
-            {n:"Mob (100%)",s:42},{n:"Meliodas",s:41.5},{n:"Natsu Dragneel",s:40},{n:"Denji (Hell)",s:39.5},{n:"Eren Yeager",s:38},{n:"Deku (100%)",s:37},{n:"Gon (Adult)",s:37},{n:"Meruem",s:35},{n:"Jotaro Kujo",s:33},{n:"Light Yagami",s:30}
-        ].sort(() => Math.random() - 0.5);
-
-        let idx = 0, roundCounter = 0, p1 = {n:"",b:20,t:[]}, p2 = {n:"",b:20,t:[]};
-        function start() {
-            p1.n = document.getElementById("p1-in").value.trim() || "Giocatore 1"; 
-            p2.n = document.getElementById("p2-in").value.trim() || "Giocatore 2";
-            document.getElementById("p1-n").innerText = p1.n; 
-            document.getElementById("p2-n").innerText = p2.n;
-            document.getElementById("btn1").innerText = `Prende ${p1.n}`; 
-            document.getElementById("btn2").innerText = `Prende ${p2.n}`;
-            
-            document.getElementById("setup").style.display = "none";
-            document.getElementById("game").style.display = "block";
-            show();
-        }
-
-        function show() {
-            if (p1.t.length >= 5 && p2.t.length >= 5) { freezeAndPrompt(); return; }
-            if (idx >= pool.length) { freezeAndPrompt(); return; }
-
-            // Se uno finisce gli slot, assegna tutto il resto all'altro a costo zero
-            if (p1.t.length >= 5 && p2.t.length < 5) {
-                while (p2.t.length < 5 && idx < pool.length) {
-                    p2.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
-                    idx++;
-                }
-                ui(); freezeAndPrompt(); return;
-            }
-            if (p2.t.length >= 5 && p1.t.length < 5) {
-                while (p1.t.length < 5 && idx < pool.length) {
-                    p1.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
-                    idx++;
-                }
-                ui(); freezeAndPrompt(); return;
-            }
-
-            // Se entrambi sono a 0€, parte l'estrazione a sorte
-            if (p1.b <= 0 && p2.b <= 0 && (p1.t.length < 5 || p2.t.length < 5)) {
-                while (p1.t.length < 5 || p2.t.length < 5) {
-                    if (idx >= pool.length) break;
-                    let valid = [];
-                    if (p1.t.length < 5) valid.push(p1);
-                    if (p2.t.length < 5) valid.push(p2);
-                    
-                    let lucky = valid[Math.floor(Math.random() * valid.length)];
-                    lucky.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
-                    idx++;
-                }
-                ui(); freezeAndPrompt(); return;
-            }
-
-            document.getElementById("char-name").innerText = pool[idx].n;
-            document.getElementById("bid").value = 1;
-            checkSpecial();
-            ui();
-        }
-
-        function freezeAndPrompt() {
-            document.getElementById("auction-controls").style.display = "none";
-            document.getElementById("reveal-controls").style.display = "block";
-            document.getElementById("log").innerText = "Asta terminata con successo! Controllate pure i vostri team sul tabellone. Quando siete pronti, premete il tasto dorato per scoprire chi vince!";
-        }
-
-        function checkSpecial() {
-            let turnInd = document.getElementById("turn-indicator"), bidCtrl = document.getElementById("bid-control-container");
-            let btn1 = document.getElementById("btn1"), btn2 = document.getElementById("btn2"), btnSp = document.getElementById("btn-special");
-
-            document.getElementById("bid").oninput = function() {
-                let val = parseFloat(this.value);
-                if (p1.b === p2.b && p1.b > 0 && val === p1.b) {
-                    btn1.classList.add("hidden"); btn2.classList.add("hidden"); btnSp.classList.remove("hidden");
-                    document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per il lancio della moneta.";
-                } else {
-                    btn1.classList.remove("hidden"); btn2.classList.remove("hidden"); btnSp.classList.add("hidden");
-                }
-            };
-
-            bidCtrl.classList.remove("hidden"); btnSp.classList.add("hidden"); btn1.classList.remove("hidden"); btn2.classList.remove("hidden");
-            
-            if (p1.b > 0 && p2.b <= 0) {
-                turnInd.innerText = p1.n;
-            } else if (p2.b > 0 && p1.b <= 0) {
-                turnInd.innerText = p2.n;
-            } else {
-                turnInd.innerText = (roundCounter % 2 === 0) ? p1.n : p2.n;
-            }
-        }
-        function bid(pNum) {
-            let inputVal = parseFloat(document.getElementById("bid").value);
-            
-            if (isNaN(inputVal) || inputVal < 0 || inputVal % 1 !== 0) {
-                alert("Puoi offrire solo cifre intere! Niente decimali.");
-                return;
-            }
-            
-            let cost = parseInt(inputVal);
-            let clicker = pNum === 1 ? p1 : p2;
-            let opponent = pNum === 1 ? p2 : p1;
-            
-            let currentOpenerName = document.getElementById("turn-indicator").innerText;
-            let isOpener = clicker.n === currentOpenerName;
-
-            if (cost === 0) {
-                if (opponent.b > 0) {
-                    alert("Non puoi impostare 0€ se l'avversario ha ancora budget! L'offerta minima per l'asta è 1€.");
-                    return;
-                }
-                if (!isOpener) {
-                    alert("Puoi regalare il personaggio a 0€ solo se tocca a te aprire l'asta! Devi premere il TUO pulsante.");
-                    return;
-                }
-                if (clicker.b <= 0) {
-                    alert("Devi avere dei soldi nel tuo budget per poter decidere di regalare questo personaggio.");
-                    return;
-                }
-                if (opponent.t.length >= 5) {
-                    alert("L'avversario ha già gli slot pieni! Non puoi regalargli questo personaggio.");
-                    return;
-                }
-                
-                opponent.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
-                document.getElementById("log").innerText = `🎁 Regalato! ${clicker.n} cede ${pool[idx].n} a ${opponent.n} gratis!`;
-            } else {
-                if (cost > clicker.b) {
-                    alert(`Non hai abbastanza budget! Il tuo massimo disponibile è ${clicker.b}€.`);
-                    return;
-                }
-                if (cost === 1 && !isOpener && opponent.b > 0) {
-                    alert(`L'asta è stata aperta a 1€ da ${currentOpenerName}. Per superarlo devi rilanciare ad almeno 2€!`);
-                    return;
-                }
-                if (clicker.t.length >= 5) return;
-                
-                clicker.b -= cost; 
-                clicker.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
-                document.getElementById("log").innerText = `🎉 ${clicker.n} prende ${pool[idx].n} a ${cost}€!`;
-            }
-            
-            idx++; roundCounter++; 
-            ui();
-            setTimeout(show, 400);
-        }
-
-        function handleAllInParitario() {
-            if (p1.b === p2.b && p1.b > 0) {
-                let cost = p1.b;
-                let winner = Math.random() < 0.5 ? p1 : p2;
-                winner.b -= cost; 
-                winner.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)});
-                document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n} in ALL IN a ${cost}€ per ${pool[idx].n}!`;
-                idx++; roundCounter++; 
-                ui();
-                setTimeout(show, 400);
-            }
-        }
-
-        function ui() {
-            document.getElementById("p1-b").innerText = p1.b; document.getElementById("p2-b").innerText = p2.b;
-            document.getElementById("p1-s").innerText = p1.t.length; document.getElementById("p2-s").innerText = p2.t.length;
-            document.getElementById("p1-t").innerHTML = p1.t.map(c => `<div class="bg-indigo-950/40 border border-indigo-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate">🔹 ${c.n}</div>`).join('');
-            document.getElementById("p2-t").innerHTML = p2.t.map(c => `<div class="bg-pink-950/40 border border-pink-500/20 px-3 py-1.5 rounded-xl text-slate-100 font-semibold truncate">🔸 ${c.n}</div>`).join('');
-            
-            document.getElementById("btn1").disabled = p1.t.length >= 5; 
-            document.getElementById("btn2").disabled = p2.t.length >= 5;
-            
-            if (p1.t.length >= 5) { 
-                document.getElementById("card-p1").style.opacity = "0.4"; 
-                document.getElementById("btn1").style.display = "none"; 
-                document.getElementById("btn2").style.display = "block";
-                document.getElementById("btn2").style.width = "100%";
-            } else { 
-                document.getElementById("card-p1").style.opacity = "1"; 
-            }
-            
-            if (p2.t.length >= 5) { 
-                document.getElementById("card-p2").style.opacity = "0.4"; 
-                document.getElementById("btn2").style.display = "none"; 
-                document.getElementById("btn1").style.display = "block";
-                document.getElementById("btn1").style.width = "100%";
-            } else { 
-                document.getElementById("card-p2").style.opacity = "1"; 
-            }
-        }
-
-        function over() {
-            document.getElementById("game").style.display = "none"; 
-            document.getElementById("end").style.display = "block";
-            
-            let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0};
-            let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0};
-
-            document.getElementById("res-p1-name").innerText = p1.n;
-            document.getElementById("res-p2-name").innerText = p2.n;
-            document.getElementById("res-p1-char").innerText = max1.n;
-            document.getElementById("res-p2-char").innerText = max2.n;
-            document.getElementById("res-p1-points").innerText = max1.s.toFixed(1);
-            document.getElementById("res-p2-points").innerText = max2.s.toFixed(1);
-            
-            let winBox = document.getElementById("final-winner-text");
-            
-            let diff = Math.abs(max1.s - max2.s);
-            
-            if (diff <= 0.5) {
-                winBox.innerText = "Pareggio Decimale! 🤝";
-            } else if (max1.s > max2.s) {
-                winBox.innerText = `Vince ${p1.n}! 🏆`;
-            } else {
-                winBox.innerText = `Vince ${p2.n}! 🏆`;
-            }
-        }
-    </script>
-</body>
+<!DOCTYPE html> 
+<html lang="it"> 
+<head> 
+ <meta charset="UTF-8"> 
+ <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+ <title>Anime Draft con Asta</title> 
+ <!-- CORREZIONE SOLO QUI: Caricamento statico ultraleggero per non far bloccare il cellulare -->
+ <link rel="stylesheet" href="https://cloudflare.com"> 
+ <style> 
+ body { 
+ background: linear-gradient(135deg, #0b0f19 0%, #17153b 50%, #0b0f19 100%); 
+ color: #f8fafc; 
+ font-family: system-ui, -apple-system, sans-serif; 
+ -webkit-tap-highlight-color: transparent; 
+ } 
+ .neon-p1 { 
+ box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2); 
+ } 
+ .neon-p2 { 
+ box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.2); 
+ } 
+ .glass-card { 
+ background: rgba(15, 23, 42, 0.75); 
+ backdrop-filter: blur(16px); 
+ -webkit-backdrop-filter: blur(16px);
+ border: 1px solid rgba(255,255,255,0.05); 
+ } 
+ .bg-clip-text { -webkit-background-clip: text; background-clip: text; }
+ .text-transparent { color: transparent; }
+ </style> 
+ </head> 
+ <body class="p-4 md:p-6 min-h-screen flex flex-col items-center justify-center select-none antialiased">
+ <!-- SCHERMATA INSERIMENTO NOMI --> 
+ <div id="setup" class="w-full max-w-md glass-card p-8 rounded-[2rem] shadow-2xl text-center" style="display: block;"> 
+ <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 mb-6">ANIME DRAFT</h1> 
+ <div class="space-y-4 mb-8"> 
+ <input type="text" id="p1-in" value="Giocatore 1" class="w-full bg-black border border-gray-800 rounded-2xl p-4 text-white text-center font-bold focus:outline-none"> 
+ <input type="text" id="p2-in" value="Giocatore 2" class="w-full bg-black border border-gray-800 rounded-2xl p-4 text-white text-center font-bold focus:outline-none"> 
+ </div> 
+ <button onclick="start()" class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 font-black py-4 rounded-2xl cursor-pointer">ENTRA NELL'ARENA ⚔️</button> 
+ </div> 
+ 
+ <!-- SCHERMATA CENTRALE DEL GIOCO --> 
+ <div id="game" class="w-full max-w-md space-y-5" style="display: none;"> 
+ <div class="grid grid-cols-2 gap-4 text-center"> 
+ <!-- Pannello Personale P1 --> 
+ <div id="card-p1" class="glass-card p-5 rounded-[2rem] border-b-4 border-indigo-500 neon-p1"> 
+ <p id="p1-n" class="font-black text-xs text-indigo-400 truncate">P1</p> 
+ <p class="text-3xl font-black text-green-400 mt-1"><span id="p1-b">20</span>€</p> 
+ <div class="mt-2 inline-flex px-2.5 py-0.5 bg-gray-900 rounded-full text-[10px] font-black">SLOT: <span id="p1-s" class="text-white">0</span>/5</div> 
+ <div id="p1-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div> 
+ </div> 
+ <!-- Pannello Personale P2 --> 
+ <div id="card-p2" class="glass-card p-5 rounded-[2rem] border-b-4 border-pink-500 neon-p2"> 
+ <p id="p2-n" class="font-black text-xs text-pink-400 truncate">P2</p> 
+ <p class="text-3xl font-black text-green-400 mt-1"><span id="p2-b">20</span>€</p> 
+ <div class="mt-2 inline-flex px-2.5 py-0.5 bg-gray-900 rounded-full text-[10px] font-black">SLOT: <span id="p2-s" class="text-white">0</span>/5</div> 
+ <div id="p2-t" class="mt-4 space-y-1.5 text-xs text-left max-h-[140px] overflow-y-auto"></div> 
+ </div> 
+ </div> 
+ 
+ <!-- SCHEDA DELL'ASTA / BLOCCO REVELATION --> 
+ <div class="glass-card p-6 rounded-[2rem] text-center shadow-2xl relative overflow-hidden"> 
+ <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div> 
+ <!-- Contenitore Standard dell'Asta --> 
+ <div id="auction-controls"> 
+ <div class="inline-flex items-center gap-1.5 bg-black border border-gray-800 px-3 py-1 rounded-full text-[10px] text-gray-400 font-black">TABELLONE ASTA</div> 
+ <h2 id="char-name" class="text-3xl font-black mt-5 px-2 min-h-[72px] flex items-center justify-center">---</h2> 
+ <div id="turn-box" class="my-3 py-1 px-3 bg-black rounded-xl inline-block border border-gray-800 text-xs"> 
+ Apre l'asta: <span id="turn-indicator" class="font-bold text-yellow-400">---</span> 
+ </div> 
+ <div id="bid-control-container" class="mt-2 bg-black p-3 rounded-2xl max-w-[160px] mx-auto flex items-center justify-center gap-1"> 
+ <input type="number" id="bid" min="0" step="1" value="1" class="w-20 bg-transparent text-center text-3xl font-black text-white focus:outline-none"> 
+ <span class="text-xl font-extrabold text-green-400">€</span> 
+ </div> 
+ <div class="grid grid-cols-2 gap-3 mt-5"> 
+ <button onclick="bid(1)" id="btn1" class="bg-gradient-to-b from-indigo-500 to-indigo-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P1</button> 
+ <button onclick="bid(2)" id="btn2" class="bg-gradient-to-b from-pink-500 to-pink-600 font-bold py-3.5 rounded-xl text-sm cursor-pointer text-white">Prende P2</button> 
+ </div> 
+ <button onclick="handleAllInParitario()" id="btn-special" class="w-full mt-3 bg-gradient-to-r from-yellow-500 to-amber-500 font-black py-4 rounded-xl text-sm text-gray-900 hidden active:scale-[0.97] transition cursor-pointer tracking-wider">ALL IN 🎲</button> 
+ </div> 
+ <!-- Pulsante Speciale di fine draft --> 
+ <div id="reveal-controls" style="display: none;" class="py-6"> 
+ <span class="text-5xl animate-bounce inline-block mb-2">⚔️</span> 
+ <h3 class="text-xl font-black text-gray-200 mb-4">TEAM COMPLETATI!</h3> 
+ <button onclick="over()" class="w-full bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 text-gray-900 font-black py-4 rounded-2xl text-sm tracking-wider cursor-pointer shadow-lg active:scale-[0.98] transition"> SCOPRI IL VINCITORE 👑 </button> </div> 
+ </div> 
+ <div class="bg-black border border-gray-900 rounded-2xl p-3.5 text-center text-xs text-yellow-400 italic"><p id="log">Scegliete le offerte.</p></div> </div> 
+ 
+ <!-- SCHERMATA DEL VERDETTO FINALE --> 
+ <div id="end" class="w-full max-w-md glass-card p-8 rounded-[2rem] text-center" style="display: none;"> 
+ <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-500 mb-6">VERDETTO FINALE</h2> 
+ <div class="text-xs text-gray-400 uppercase tracking-wider mb-2 font-bold">Miglior Guerriero Schierato</div> 
+ <div class="flex flex-col gap-2 text-left bg-black p-4 rounded-xl border border-gray-800 text-sm"> 
+ <p><span id="res-p1-name" class="text-indigo-400 font-bold">P1</span>: <span id="res-p1-char" class="text-white">---</span> (<span id="res-p1-points" class="font-black text-white">0</span> pt)</p> 
+ <p class="border-t border-gray-800 pt-2"><span id="res-p2-name" class="text-pink-400 font-bold">P2</span>: <span id="res-p2-char" class="text-white">---</span> (<span id="res-p2-points" class="font-black text-white">0</span> pt)</p> </div> 
+ <div class="py-4 mt-6 bg-gradient-to-r from-transparent via-green-500 to-transparent border-y border-green-500 border-opacity-20"> 
+ <p class="text-[10px] text-gray-400 uppercase tracking-widest font-black">Esito dello Scontro Diretto</p> 
+ <div id="final-winner-text" class="text-3xl font-black text-green-400 uppercase tracking-wide mt-2">---</div> </div> 
+ <button onclick="location.reload()" class="w-full mt-6 bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-2xl text-sm cursor-pointer transition">RIVINCITA 🔄</button> 
+ </div>
+<script> 
+const pool = [ 
+ {n:"Hajun",s:99.5},{n:"Featherine",s:99},{n:"Akuto Sai",s:98.5},{n:"Void Shiki",s:98},{n:"Simon (STTGL)",s:95.5},{n:"Kiana Kaslana",s:95},{n:"Rimuru Tempest",s:95},{n:"Wang Ling",s:94},{n:"Sinbad",s:92},{n:"Anos Voldigoad",s:91}, 
+ {n:"Altair",s:90.5},{n:"Anti-Spiral",s:90},{n:"Ultimate Madoka",s:89},{n:"Space Ishtar",s:88.5},{n:"CC Goku",s:87},{n:"Gilgamesh",s:86},{n:"Zeno",s:85.5},{n:"Shinra Kusakabe",s:85},{n:"Yhwach",s:82},{n:"Whis",s:81.5}, 
+ {n:"Beerus",s:80},{n:"Sailor Moon",s:78},{n:"Kaguya Otsutsuki",s:75},{n:"Saitama",s:74},{n:"Madara Uchiha",s:72},{n:"Naruto Uzumaki",s:70},{n:"Ichigo Kurosaki",s:68},{n:"Giorno (GER)",s:66},{n:"Accelerator",s:65},{n:"Funny Valentine",s:64}, 
+ {n:"Sung Jin-Woo",s:60},{n:"Mio Takamiya",s:58},{n:"Satoru Gojo",s:55.5},{n:"Sukuna",s:55},{n:"Makima",s:52},{n:"Alucard",s:50},{n:"Devilman",s:49.5},{n:"Luffy (Gear 5)",s:46},{n:"Kaido",s:45},{n:"Tatsumaki",s:43}, 
+ {n:"Mob (100%)",s:42},{n:"Meliodas",s:41.5},{n:"Natsu Dragneel",s:40},{n:"Denji (Hell)",s:39.5},{n:"Eren Yeager",s:38},{n:"Deku (100%)",s:37},{n:"Gon (Adult)",s:37},{n:"Meruem",s:35},{n:"Jotaro Kujo",s:33},{n:"Light Yagami",s:30} 
+ ].sort(() => Math.random() - 0.5); 
+ let idx = 0, roundCounter = 0, p1 = {n:"",b:20,t:[]}, p2 = {n:"",b:20,t:[]}; 
+ function start() { 
+ p1.n = document.getElementById("p1-in").value.trim() || "Giocatore 1"; 
+ p2.n = document.getElementById("p2-in").value.trim() || "Giocatore 2"; 
+ document.getElementById("p1-n").innerText = p1.n; 
+ document.getElementById("p2-n").innerText = p2.n; 
+ document.getElementById("btn1").innerText = `Prende ${p1.n}`; 
+ document.getElementById("btn2").innerText = `Prende ${p2.n}`; 
+ document.getElementById("setup").style.display = "none"; 
+ document.getElementById("game").style.display = "block"; 
+ show(); 
+ } 
+ function show() { 
+ if (p1.t.length >= 5 && p2.t.length >= 5) { freezeAndPrompt(); return; } 
+ if (idx >= pool.length) { freezeAndPrompt(); return; } 
+ // Se uno finisce gli slot, assegna tutto il resto all'altro a costo zero 
+ if (p1.t.length >= 5 && p2.t.length < 5) { 
+ while (p2.t.length < 5 && idx < pool.length) { 
+ p2.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)}); 
+ idx++; 
+ } 
+ ui(); 
+ freezeAndPrompt(); 
+ return; 
+ } 
+ if (p2.t.length >= 5 && p1.t.length < 5) { 
+ while (p1.t.length < 5 && idx < pool.length) { 
+ p1.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)}); 
+ idx++; 
+ } 
+ ui(); 
+ freezeAndPrompt(); 
+ return; 
+ } 
+ // Se entrambi sono a 0€, parte l'estrazione a sorte 
+ if (p1.b <= 0 && p2.b <= 0 && (p1.t.length < 5 || p2.t.length < 5)) { 
+ while (p1.t.length < 5 || p2.t.length < 5) { 
+ if (idx >= pool.length) break; 
+ let valid = []; 
+ if (p1.t.length < 5) valid.push(p1); 
+ if (p2.t.length < 5) valid.push(p2); 
+ let lucky = valid[Math.floor(Math.random() * valid.length)]; 
+ lucky.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)}); 
+ idx++; 
+ } 
+ ui(); 
+ freezeAndPrompt(); 
+ return; 
+ } 
+ document.getElementById("char-name").innerText = pool[idx].n; 
+ document.getElementById("bid").value = 1; 
+ checkSpecial(); 
+ ui(); 
+ }
+ function freezeAndPrompt() { 
+ document.getElementById("auction-controls").style.display = "none"; 
+ document.getElementById("reveal-controls").style.display = "block"; 
+ document.getElementById("log").innerText = "Asta terminata con successo! Controllate pure i vostri team sul tabellone. Quando siete pronti, premete il tasto dorato per scoprire chi vince!"; 
+ } 
+ function checkSpecial() { 
+ let turnInd = document.getElementById("turn-indicator"), bidCtrl = document.getElementById("bid-control-container"); 
+ let btn1 = document.getElementById("btn1"), btn2 = document.getElementById("btn2"), btnSp = document.getElementById("btn-special"); 
+ document.getElementById("bid").oninput = function() { 
+ let val = parseFloat(this.value); 
+ if (p1.b === p2.b && p1.b > 0 && val === p1.b) { 
+ btn1.style.display = "none"; 
+ btn2.style.display = "none"; 
+ btnSp.classList.remove("hidden"); 
+ document.getElementById("log").innerText = "⚠️ ALL-IN PARITARIO! Clicca sul pulsante dorato ALL IN per il lancio della moneta."; 
+ } else { 
+ btn1.style.display = "block"; 
+ btn2.style.display = "block"; 
+ btnSp.classList.add("hidden"); 
+ } 
+ }; 
+ bidCtrl.classList.remove("hidden"); 
+ btnSp.classList.add("hidden"); 
+ btn1.style.display = "block"; 
+ btn2.style.display = "block"; 
+ if (p1.b > 0 && p2.b <= 0) { 
+ turnInd.innerText = p1.n; 
+ } else if (p2.b > 0 && p1.b <= 0) { 
+ turnInd.innerText = p2.n; 
+ } else { 
+ turnInd.innerText = (roundCounter % 2 === 0) ? p1.n : p2.n; 
+ } 
+ } 
+ function bid(pNum) { 
+ let inputVal = parseFloat(document.getElementById("bid").value); 
+ if (isNaN(inputVal) || inputVal < 0 || inputVal % 1 !== 0) { 
+ alert("Puoi offrire solo cifre intere! Niente decimali."); 
+ return; 
+ } 
+ let cost = parseInt(inputVal); 
+ let clicker = pNum === 1 ? p1 : p2; 
+ let opponent = pNum === 1 ? p2 : p1; 
+ let currentOpenerName = document.getElementById("turn-indicator").innerText; 
+ let isOpener = clicker.n === currentOpenerName; 
+ if (cost === 0) { 
+ if (opponent.b > 0) { 
+ alert("Non puoi impostare 0€ se l'avversario ha ancora budget! L'offerta minima per l'asta è 1€."); 
+ return; 
+ } 
+ if (!isOpener) { 
+ alert("Puoi regalare il personaggio a 0€ solo se tocca a te aprire l'asta! Devi premere il TUO pulsante."); 
+ return; 
+ } 
+ if (clicker.b <= 0) { 
+ alert("Devi avere dei soldi nel tuo budget per poter decidere di regalare questo personaggio."); 
+ return; 
+ } 
+ if (opponent.t.length >= 5) { 
+ alert("L'avversario ha già gli slot pieni! Non puoi regalargli questo personaggio."); 
+ return; 
+ } 
+ opponent.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)}); 
+ document.getElementById("log").innerText = `🎁 Regalato! ${clicker.n} cede ${pool[idx].n} a ${opponent.n} gratis!`; 
+ } else { 
+ if (cost > clicker.b) { 
+ alert(`Non hai abbastanza budget! Il tuo massimo disponibile è ${clicker.b}€.`); 
+ return; 
+ } 
+ if (cost === 1 && !isOpener && opponent.b > 0) { 
+ alert(`L'asta è stata aperta a 1€ da ${currentOpenerName}. Per superarlo devi rilanciare ad almeno 2€!`); 
+ return; 
+ } 
+ if (clicker.t.length >= 5) return; 
+ clicker.b -= cost; 
+ clicker.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)}); 
+ document.getElementById("log").innerText = `🎉 ${clicker.n} prende ${pool[idx].n} a ${cost}€!`; 
+ } 
+ idx++; 
+ roundCounter++; 
+ ui(); 
+ setTimeout(show, 400); 
+ } 
+ function handleAllInParitario() { 
+ if (p1.b === p2.b && p1.b > 0) { 
+ let cost = p1.b; 
+ let winner = Math.random() < 0.5 ? p1 : p2; 
+ winner.b -= cost; 
+ winner.t.push({n: pool[idx].n, s: parseFloat(pool[idx].s)}); 
+ document.getElementById("log").innerText = `🪙 La moneta premia ${winner.n} in ALL IN a ${cost}€ per ${pool[idx].n}!`; 
+ idx++; 
+ roundCounter++; 
+ ui(); 
+ setTimeout(show, 400); 
+ } 
+ } 
+ function ui() { 
+ document.getElementById("p1-b").innerText = p1.b; 
+ document.getElementById("p2-b").innerText = p2.b; 
+ document.getElementById("p1-s").innerText = p1.t.length; 
+ document.getElementById("p2-s").innerText = p2.t.length; 
+ document.getElementById("p1-t").innerHTML = p1.t.map(c => `<div class="bg-blue-900 bg-opacity-20 border border-blue-500 border-opacity-20 px-3 py-1.5 rounded-xl text-gray-100 font-semibold truncate">🔹 ${c.n}</div>`).join(''); 
+ document.getElementById("p2-t").innerHTML = p2.t.map(c => `<div class="bg-pink-900 bg-opacity-20 border border-pink-500 border-opacity-20 px-3 py-1.5 rounded-xl text-gray-100 font-semibold truncate">🔸 ${c.n}</div>`).join(''); 
+ document.getElementById("btn1").disabled = p1.t.length >= 5; 
+ document.getElementById("btn2").disabled = p2.t.length >= 5; 
+ if (p1.t.length >= 5) { 
+ document.getElementById("card-p1").style.opacity = "0.4"; 
+ document.getElementById("btn1").style.display = "none"; 
+ document.getElementById("btn2").style.display = "block"; 
+ document.getElementById("btn2").style.width = "100%"; 
+ } else { 
+ document.getElementById("card-p1").style.opacity = "1"; 
+ } 
+ if (p2.t.length >= 5) { 
+ document.getElementById("card-p2").style.opacity = "0.4"; 
+ document.getElementById("btn2").style.display = "none"; 
+ document.getElementById("btn1").style.display = "block"; 
+ document.getElementById("btn1").style.width = "100%"; 
+ } else { 
+ document.getElementById("card-p2").style.opacity = "1"; 
+ } 
+ } 
+ function over() { 
+ document.getElementById("game").style.display = "none"; 
+ document.getElementById("end").style.display = "block"; 
+ let max1 = p1.t.length > 0 ? p1.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0}; 
+ let max2 = p2.t.length > 0 ? p2.t.reduce((max, c) => c.s > max.s ? c : max) : {n:"Nessuno", s:0}; 
+ document.getElementById("res-p1-name").innerText = p1.n; 
+ document.getElementById("res-p2-name").innerText = p2.n; 
+ document.getElementById("res-p1-char").innerText = max1.n; 
+ document.getElementById("res-p2-char").innerText = max2.n; 
+ document.getElementById("res-p1-points").innerText = max1.s.toFixed(1); 
+ document.getElementById("res-p2-points").innerText = max2.s.toFixed(1); 
+ let winBox = document.getElementById("final-winner-text"); 
+ let diff = Math.abs(max1.s - max2.s); 
+ if (diff <= 0.5) { 
+ winBox.innerText = "Pareggio Decimale! 🤝"; 
+ } else if (max1.s > max2.s) { 
+ winBox.innerText = `Vince ${p1.n}! 🏆`; 
+ } else { 
+ winBox.innerText = `Vince ${p2.n}! 🏆`; 
+ } 
+ } 
+</script> 
+</body> 
 </html>
